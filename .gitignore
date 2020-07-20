@@ -1,0 +1,8 @@
+*.pyc
+__pycache__/
+.vscode
+.pytest_cache
+*.egg-info/
+submodule_utils/tests/mock/experiment.yaml
+submodule_utils/tests/outputs/
+submodule_utils/tests/mock/

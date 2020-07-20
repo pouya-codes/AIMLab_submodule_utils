@@ -1,0 +1,3 @@
+#!/bin/bash
+MMRD_OVR_SUBTYPES='MMRD=1 OTHERS=0 P53ABN=0 P53WT=0 POLE=0'
+python try.py --subtypes $MMRD_OVR_SUBTYPES

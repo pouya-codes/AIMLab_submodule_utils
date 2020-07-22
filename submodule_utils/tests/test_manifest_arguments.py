@@ -116,10 +116,7 @@ create_groups:
     dataset_origin: tcga
     patch_location: /path/to/patches
     patch_pattern:  subtype/slide
-    filter_labels:
-        - annotation=Tumor
-        - patch_size=256
-        - magnification=20
+    filter_labels: [annotation=Tumor, patch_size=256, magnification=20]
     out_location: /path/to/patient_groups.json
     max_patient_patches: 1000
 

@@ -6,3 +6,5 @@ __pycache__/
 submodule_utils/tests/mock/experiment.yaml
 submodule_utils/tests/outputs/
 submodule_utils/tests/mock/
+dist
+build

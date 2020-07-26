@@ -1,0 +1,10 @@
+try_me:
+  baz: ~
+  printout:
+    say: foobar
+
+try_other:
+  baz: ~
+  write-to-log:
+    log_location: /path/to/log
+    say: foobar

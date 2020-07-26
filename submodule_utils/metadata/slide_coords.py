@@ -64,18 +64,18 @@ class SlideCoordsMetadata(object):
     """Represents a slide coords manifest.
     This manifest records the coordinates of each patch extracted from each slide.
 
-    SlideCoordsMetadata saves/load a slide coordinates JSON file with this format.
+    SlideCoordsMetadata saves/load slide coordinates JSON file with the format specified by SLIDE_COORDS_METADATA below.
 
     ```
     PATCH_SIZE := integer of size of patch of PATCH_SIZE x PATCH_SIZE to extract from every slide.
     RESIZE_SIZES := list of integer of sizes to downsample extracted patch to RESIZE_SIZES x RESIZE_SIZES patch and save.
     REGION_LABEL := key specifying region annotation label the list value of coordinates belong to.
     COORDINATE := list [x, y] of 2 integers specifying top-left corner of extracted patch.
-    {
+    SLIDE_COORDS_METADATA := {
         patch_size: [[ PATCH_SIZE ]],
         resize_sizes: [[ RESIZE_SIZES ]],
         slides: {
-            [[slide ID]]: {
+            [[ slide ID ]]: {
                 [[ REGION_LABEL ]]: [
                     [[ COORDINATE ]]
                 ],
@@ -88,6 +88,8 @@ class SlideCoordsMetadata(object):
 
     Attributes
     ----------
+    slide_coords_file : str
+    
     slides : dict of (str: CoordsMetadata)
         JSON persistable state of slide-coords manifest.
     """
@@ -111,6 +113,7 @@ class SlideCoordsMetadata(object):
         self.slides = { }
         self.patch_size = patch_size
         self.__resize_sizes = resize_sizes
+        self.augment_metadata = None
 
     @property
     def slide_names(self):
@@ -146,25 +149,37 @@ class SlideCoordsMetadata(object):
         return self.slides[slide_name]
 
     def consume_coords(self, coords):
-        """Add slide coords of slides to metadata (assumes slide been added yet).
+        """Add the coordinates of slides to metadata.
 
         Parameters
         ----------
         coords : CoordsMetadata or (list of CoordsMetadata)
-            The slide coords to add. 
+            The slide coords to add.
+
+        Invariant
+        ---------
+        Assumes slide not been added yet.
         """
         if isinstance(coords, list):
             for sing_coords in coords:
                 if sing_coords.slide_name in self.slides:
-                    raise ValueError(f"{sing_coords.slide_name} should not already be in slides coords metadata.")
+                    raise ValueError(
+                            f"{sing_coords.slide_name} should not already be in slides "
+                            "coords metadata.")
                 if sing_coords.patch_size != self.patch_size:
-                    raise ValueError(f"patch sizes {sing_coords.patch_size} and {self.patch_size} do not match")
+                    raise ValueError(
+                            f"patch sizes {sing_coords.patch_size} and "
+                            f"{self.patch_size} ""do not match")
                 self.slides[sing_coords.slide_name] = sing_coords
         else:
             if coords.slide_name in self.slides:
-                raise ValueError(f"{sing_coords.slide_name} should not already be in slides coords metadata.")
+                raise ValueError(
+                        f"{sing_coords.slide_name} should not already be in slides "
+                        "coords metadata.")
             if coords.patch_size != self.patch_size:
-                raise ValueError(f"patch sizes {coords.patch_size} and {self.patch_size} do not match")
+                raise ValueError(
+                        f"patch sizes {coords.patch_size} and {self.patch_size} do not "
+                        "match")
             self.slides[coords.slide_name] = coords
 
     def dump(self):

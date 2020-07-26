@@ -220,3 +220,103 @@ class TestUtils(unittest.TestCase):
         assert payload['subtypes'] == { 'MMRD': 0, 'P53ABN': 1, 'P53WT': 2, 'POLE': 3 }
         assert payload['test_chunks'] == [2, 3]
         assert payload['test_shuffle'] == True
+
+    def test_group_ids_1(self):
+        patch_pattern = 'annotation/subtype/slide/patch_size/magnification'
+        patch_pattern = utils.create_patch_pattern(patch_pattern)
+        patch_ids = [
+            'Stroma/MMRd/VOA-1000A/512/20/0_0',
+            'Stroma/MMRd/VOA-1000A/512/20/2_2',
+            'Stroma/MMRd/VOA-1000A/512/10/0_0',
+            'Stroma/MMRd/VOA-1000A/256/20/0_0',
+            'Stroma/MMRd/VOA-1000A/256/10/0_0',
+            'Tumor/POLE/VOA-1000B/256/10/0_0']
+        
+        actual = utils.group_ids(patch_ids, patch_pattern, include=['patch_size'])
+        expected = {
+            '512/0_0': [
+                'Stroma/MMRd/VOA-1000A/512/20/0_0',
+                'Stroma/MMRd/VOA-1000A/512/10/0_0'
+            ],
+            '512/2_2': [
+                'Stroma/MMRd/VOA-1000A/512/20/2_2',
+            ],
+            '256/0_0': [
+                'Stroma/MMRd/VOA-1000A/256/20/0_0',
+                'Stroma/MMRd/VOA-1000A/256/10/0_0',
+                'Tumor/POLE/VOA-1000B/256/10/0_0'
+            ]
+        }
+        list(map(lambda v: v.sort(), actual.values()))
+        list(map(lambda v: v.sort(), expected.values()))
+        assert actual == expected
+        actual = utils.group_ids(patch_ids, patch_pattern,
+                exclude=['patch_size', 'magnification'])
+        expected = {
+            'Stroma/MMRd/VOA-1000A/0_0': [
+                'Stroma/MMRd/VOA-1000A/512/20/0_0',
+                'Stroma/MMRd/VOA-1000A/512/10/0_0',
+                'Stroma/MMRd/VOA-1000A/256/20/0_0',
+                'Stroma/MMRd/VOA-1000A/256/10/0_0'
+            ],
+            'Stroma/MMRd/VOA-1000A/2_2': [
+                'Stroma/MMRd/VOA-1000A/512/20/2_2'
+            ],
+            'Tumor/POLE/VOA-1000B/0_0': [
+                'Tumor/POLE/VOA-1000B/256/10/0_0'
+            ]
+        }
+        list(map(lambda v: v.sort(), actual.values()))
+        list(map(lambda v: v.sort(), expected.values()))
+        assert actual == expected
+
+    def test_group_paths_1(self):
+        patch_pattern = 'annotation/subtype/slide/patch_size/magnification'
+        patch_pattern = utils.create_patch_pattern(patch_pattern)
+        patch_ids = [
+            '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/20/0_0.png',
+            '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/20/2_2.png',
+            '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/10/0_0.png',
+            '/path/to/rootdir/Stroma/MMRd/VOA-1000A/256/20/0_0.png',
+            '/path/to/rootdir/Stroma/MMRd/VOA-1000A/256/10/0_0.png',
+            '/path/to/rootdir/Tumor/POLE/VOA-1000B/256/10/0_0.png']
+
+        actual = utils.group_paths(patch_ids, patch_pattern, include=['patch_size'])
+        # print(actual)
+        expected = {
+            '512/0_0': [
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/20/0_0.png',
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/10/0_0.png'
+            ],
+            '512/2_2': [
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/20/2_2.png',
+            ],
+            '256/0_0': [
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/256/20/0_0.png',
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/256/10/0_0.png',
+                '/path/to/rootdir/Tumor/POLE/VOA-1000B/256/10/0_0.png'
+            ]
+        }
+        list(map(lambda v: v.sort(), actual.values()))
+        list(map(lambda v: v.sort(), expected.values()))
+        assert actual == expected
+        # return
+        actual = utils.group_paths(patch_ids, patch_pattern,
+                exclude=['patch_size', 'magnification'])
+        expected = {
+            'Stroma/MMRd/VOA-1000A/0_0': [
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/20/0_0.png',
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/10/0_0.png',
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/256/20/0_0.png',
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/256/10/0_0.png'
+            ],
+            'Stroma/MMRd/VOA-1000A/2_2': [
+                '/path/to/rootdir/Stroma/MMRd/VOA-1000A/512/20/2_2.png'
+            ],
+            'Tumor/POLE/VOA-1000B/0_0': [
+                '/path/to/rootdir/Tumor/POLE/VOA-1000B/256/10/0_0.png'
+            ]
+        }
+        list(map(lambda v: v.sort(), actual.values()))
+        list(map(lambda v: v.sort(), expected.values()))
+        assert actual == expected

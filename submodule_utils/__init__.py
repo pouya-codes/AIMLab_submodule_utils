@@ -1,5 +1,18 @@
-from submodule_utils.subtype_enum import BinaryEnum
+# Built-in libraries
+import re
+import enum
+import os
+import collections
+import json
+import itertools
+import glob
 from pathlib import Path
+
+# External Libraries
+import h5py
+import yaml
+import numpy as np
+
 # from pynvml import *
 # from email.mime.text import MIMEText
 # from sklearn.metrics import accuracy_score
@@ -8,23 +21,17 @@ from pathlib import Path
 # from sklearn.metrics import f1_score
 # from sklearn.metrics import roc_auc_score
 # from sklearn.metrics import confusion_matrix
-import numpy as np
 # import matplotlib.path as pltPath
 # import subprocess
 # import smtplib
 # import socket
-import glob
 # import csv
-import re
-import enum
-import os
 # import random
 # import torch
 # import copy
-# import collections
-import h5py
-import json
-import yaml
+
+# Modules
+from submodule_utils.subtype_enum import BinaryEnum
 
 DATASET_TO_PATIENT_REGEX = {
     'ovcare': re.compile(r"^[A-Z]*-?(\d*).*\(?.*\)?.*$"),
@@ -36,6 +43,9 @@ BALANCE_PATCHES_OPTIONS = ['group', 'overall', 'category']
 PATCH_PATTERN_WORDS = [
     'annotation', 'subtype', 'slide', 'patch_size',
     'magnification']
+
+def is_iterable(x):
+    return isinstance(x, collections.abc.Iterable)
 
 def get_dirname_of(filepath):
     """Get absolute path of the immediate directory the file is in
@@ -128,7 +138,7 @@ def extract_yaml_from_json(filepath):
     return extract_yaml_from_str(data)
 
 def enum_to_dict(e):
-    '''Convert CategoryEnum back to dict
+    """Convert enum.Enum to a dict
     
     Parameters
     ----------
@@ -137,8 +147,24 @@ def enum_to_dict(e):
     Returns
     -------
     dict
-    '''
+    """
     return {s.name: s.value for s in e}
+
+def get_inner_key_from_dict_of_dict(d):
+    """Get the inner keys of a of dict of dict.
+
+    Parameters
+    ----------
+    d : dict of dict
+
+    Returns
+    -------
+    list
+        List of inner keys of dict with duplication.
+    """
+    inner_keys = [d[k].keys() for k in d.keys()]
+    return list(itertools.chain(inner_keys))
+
 
 def invert_dict_of_dict(d):
     """Invert the inner and outer keys of dict of dict
@@ -162,7 +188,7 @@ def invert_dict_of_dict(d):
     return o 
 
 def count(f, l):
-    """Count the number of occurances in a list
+    """Count the number of occurances in a list.
 
     Parameters
     ----------
@@ -253,7 +279,7 @@ def create_patch_pattern(patch_pattern):
         return {k: i for i,k in enumerate(patch_pattern)}
 
 def create_category_enum(is_binary, subtypes=None):
-    '''Create CategoryEnum used to group patch paths. The key in the CategoryEnum is the string fragment in the patch path to lookup and the value in the CategoryEnum is group ID to group the patch.
+    """Create CategoryEnum used to group patch paths. The key in the CategoryEnum is the string fragment in the patch path to lookup and the value in the CategoryEnum is group ID to group the patch.
 
     Parameters
     ----------
@@ -266,8 +292,8 @@ def create_category_enum(is_binary, subtypes=None):
     Returns
     -------
     enum.Enum
-        Either BinaryEnum where keys are the annotation of the patch, or SubtypeEnum where keys are the subtypes the slide whom the patch is extracted from is categorized in
-    '''
+        Either BinaryEnum where keys are the annotation of the patch, or SubtypeEnum where keys are the subtypes the slide whom the patch is extracted from is categorized in.
+    """
     if is_binary:
         return BinaryEnum
     else:
@@ -301,6 +327,7 @@ def create_patch_id(path, patch_pattern):
         Absolute path to a patch
 
     patch_pattern : dict
+        Dictionary describing the directory structure of the patch path. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'.
 
     Returns
     -------
@@ -312,17 +339,29 @@ def create_patch_id(path, patch_pattern):
     patch_id = '/'.join(patch_id)
     return patch_id
 
+def split_right_of_id(id):
+    """Function that removes the rightmost word from an ID string of '/' separated words. For example: 'Tumor/MMRd/VOA-100/256/10/0_0' becomes ('Tumor/MMRd/VOA-100/256/10', '0_0',)
+    """
+    return '/'.join(id.split('/')[:-1]), id.split('/')[-1]
+
+def snip_left_of_id(id):
+    """Function that removes the leftmost word from a string of '/' separated words. For example: 'Tumor/MMRd/VOA-100/256/10/0_0' becomes ('Tumor', 'MMRd/VOA-100/256/10/0_0',)
+    """
+    return id.split('/')[0], '/'.join(id.split('/')[1:])
+
 def get_slide_by_patch_id(patch_id, patch_pattern):
     """Function to obtain slide id from patch id
 
     Parameters
     ----------
-    patch_id : string
+    patch_id : str
+
     patch_pattern : dict
+        Dictionary describing the directory structure of the patch paths used to find the slide word in the patch ID. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'.
 
     Returns
     -------
-    slide_id : string
+    slide_id : str
         Slide id extracted from `patch_id`
     """
     slide_id = patch_id.split('/')[patch_pattern['slide']]
@@ -330,7 +369,7 @@ def get_slide_by_patch_id(patch_id, patch_pattern):
 
 
 def get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum, is_binary=False):
-    """Get category label from patch id
+    """Get category label from patch id. The label can be either 'annotation' or 'subtype' based on is_binary flag. 
 
     Parameters
     ----------
@@ -338,7 +377,7 @@ def get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum, is_binary=False
         Patch ID get label from
 
     patch_pattern : dict
-        Used to find the label word in the patch ID
+        Dictionary describing the directory structure of the patch paths used to find the label word in the patch ID. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'.
 
     CategoryEnum : enum.Enum
         Acts as the lookup table for category label
@@ -350,7 +389,6 @@ def get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum, is_binary=False
     -------
     enum.Enum
         label from CategoryEnum
-
     """
     label = patch_id.split('/')[patch_pattern['annotation' if is_binary else 'subtype']]
     return CategoryEnum[label if is_binary else label.upper()]
@@ -365,7 +403,7 @@ def get_patch_size_by_patch_id(patch_id, patch_pattern):
         Patch ID get label from
 
     patch_pattern : dict
-        Used to find the label word in the patch ID
+        Dictionary describing the directory structure of the patch paths used to find the patch_size word in the patch ID. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'.
 
     Returns
     -------
@@ -373,6 +411,7 @@ def get_patch_size_by_patch_id(patch_id, patch_pattern):
         Patch size
     """
     return int(patch_id.split('/')[patch_pattern['patch_size']])
+
 
 def get_magnification_by_patch_id(patch_id, patch_pattern):
     """Get patch magnification from patch id
@@ -391,6 +430,7 @@ def get_magnification_by_patch_id(patch_id, patch_pattern):
         Patch magnification
     """
     return int(patch_id.split('/')[patch_pattern['magnification']]) 
+
 
 def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
     """
@@ -428,7 +468,7 @@ def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, Category
         List of absolute patch paths
     
     patch_pattern : dict
-        Dictionary describing the directory structure of the patch paths. The words are 'annotation', 'subtype', 'slide', 'magnification'
+        Dictionary describing the directory structure of the patch paths. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'
 
     CategoryEnum : enum.Enum
         The enum representing the categories and is one of (SubtypeEnum, BinaryEnum)
@@ -462,6 +502,117 @@ def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, Category
     return subtype_patient_slide_patch
 
 
+def group_ids(ids, patch_pattern, include=[], exclude=[]):
+    """Group IDs by patch pattern words. For example if patch_pattern of IDs is 'annotation/subtype/slide/patch_size/magnification' and we have IDs like
+
+    Stroma/MMRd/VOA-1000A/512/20/0_0
+    Stroma/MMRd/VOA-1000A/512/10/0_0
+    Stroma/MMRd/VOA-1000A/512/20/2_2
+    Stroma/MMRd/VOA-1000A/256/20/0_0
+    Stroma/MMRd/VOA-1000A/256/10/0_0
+    Tumor/POLE/VOA-1000B/256/10/0_0
+
+    Setting include=['patch_size'] gives
+
+    512/0_0: [
+        Stroma/MMRd/VOA-1000A/512/20/0_0
+        Stroma/MMRd/VOA-1000A/512/10/0_0
+    ],
+    512/2_2: [
+        Stroma/MMRd/VOA-1000A/512/20/2_2
+    ],
+    256/0_0: [
+        Stroma/MMRd/VOA-1000A/256/20/0_0
+        Stroma/MMRd/VOA-1000A/256/10/0_0
+        Tumor/POLE/VOA-1000B/256/10/0_0
+    ]
+
+    Setting exclude=['patch_size', 'magnification'] gives
+
+    Stroma/MMRd/VOA-1000A/0_0: [
+        Stroma/MMRd/VOA-1000A/512/20/0_0
+        Stroma/MMRd/VOA-1000A/512/10/0_0
+        Stroma/MMRd/VOA-1000A/256/20/0_0
+        Stroma/MMRd/VOA-1000A/256/10/0_0
+    ],
+    Stroma/MMRd/VOA-1000A/2_2: [
+        Stroma/MMRd/VOA-1000A/512/20/2_2
+    ],
+    Tumor/POLE/VOA-1000B: [
+        Tumor/POLE/VOA-1000B/256/10/0_0
+    ]
+
+    Parameters
+    ----------
+    patch_ids : list of str
+
+    patch_pattern : dict
+        Dictionary describing the directory structure of the patch paths. The words are 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'
+
+    include : iterable of str
+        The words to group by. By default includes all words.
+    
+    exclude : iterable of str
+        The words to exclude.
+
+    Returns
+    -------
+    dict of str: list
+        The patch IDs grouped by words.
+    """
+    id_nd = np.array([[*id.split('/'), id] for id in ids])
+    words = set(patch_pattern) - set(exclude)
+    if include:
+        words = words & set(include)
+    indices = sorted([patch_pattern[word] for word in words] + [
+            id_nd.shape[1] - 2, id_nd.shape[1] - 1])
+    id_nd = id_nd[:,indices]
+    id_nd = np.apply_along_axis(lambda r: np.array(['/'.join(r[:-1]), r[-1]]),
+            1, id_nd)
+    group = { }
+    for common_id, id in id_nd:
+        if common_id not in group:
+            group[common_id] = []
+        group[common_id].append(id)
+    return group
+
+
+def group_paths(paths, patch_pattern, include=[], exclude=[]):
+    """Group paths by words. Same as group_ids except uses paths instead of IDs.
+
+    Parameters
+    ----------
+    paths : list of str
+
+    patch_pattern : dict
+        Dictionary describing the directory structure of the patch paths. The words are 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'
+
+    words : list of str
+        The common words to merge.
+
+    Returns
+    -------
+    dict of str: list
+        The patch paths grouped by words.
+    """
+    create_id = lambda path: create_patch_id(path, patch_pattern)
+    id_nd = np.array([[*create_id(path).split('/'), path] for path in paths])
+    words = set(patch_pattern) - set(exclude)
+    if include:
+        words = words & set(include)
+    indices = sorted([patch_pattern[word] for word in words] + [
+            id_nd.shape[1] - 2, id_nd.shape[1] - 1])
+    id_nd = id_nd[:,indices]
+    id_nd = np.apply_along_axis(lambda r: np.array(['/'.join(r[:-1]), r[-1]]),
+            1, id_nd)
+    group = { }
+    for common_id, path in id_nd:
+        if common_id not in group:
+            group[common_id] = []
+        group[common_id].append(path)
+    return group
+
+
 def read_data_ids(data_id_path):
     """Function to read data ids (i.e., any *.txt contains row based information)
 
@@ -474,7 +625,6 @@ def read_data_ids(data_id_path):
     -------
     data_ids : list
         List conntains data ids
-
     """
     with open(data_id_path) as f:
         data_ids = f.readlines()
@@ -500,7 +650,6 @@ def count_subtype(input_src, patch_pattern, CategoryEnum,
     -------
     count_per_subtype : numpy array
         Number of patches per subtypes
-
     """
     if isinstance(input_src, str):
         contents = read_data_ids(input_src)
@@ -523,6 +672,7 @@ def count_subtype(input_src, patch_pattern, CategoryEnum,
                 is_binary=is_binary).value
         count_per_subtype[cur_label] = count_per_subtype[cur_label] + 1.
     return count_per_subtype
+
 
 def patient_slide_patch_count(patch_ids_path, prefix, is_multiscale):
     '''

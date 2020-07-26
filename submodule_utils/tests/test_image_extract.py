@@ -122,6 +122,26 @@ def test_SlidePatchExtractor(mock_slides, output_dir):
         actual_patch = Image.open(actual_patchpath)
         assert almost_zero(utils.image.rmsdiff(expected_patch, actual_patch))
 
+@pytest.mark.skip
+def test_SlidePatchExtractor_to_generate(mock_slides, output_dir):
+    patch_size = 512
+    resize_sizes = [512, 256, 128]
+    resize_sizes_to_path_chunk = {
+            512: '512/40',
+            256: '256/20',
+            128: '128/10'}
+    for slide_name, os_slide in  mock_slides.items():
+        for patch, tile_loc, resized_patches in SlidePatchExtractor(
+                os_slide, patch_size, resize_sizes=resize_sizes):
+            tile_x, tile_y, x, y = tile_loc
+            for resize_size in resize_sizes:
+                os.makedirs(os.path.join(
+                        output_dir, slide_name, resize_sizes_to_path_chunk[resize_size]),
+                            exist_ok=True)
+                resized_patches[resize_size].save(os.path.join(
+                        output_dir, slide_name, resize_sizes_to_path_chunk[resize_size],
+                        f"{x}_{y}.png"))
+
 @pytest.mark.parametrize("shuffle", [True, False])
 def test_SlidePatchExtractor_resize_sizes(shuffle, mock_slides, output_dir):
     os_slide = mock_slides['TCGA-HNSC-2']

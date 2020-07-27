@@ -9,7 +9,10 @@ def dir_path(s):
     if os.path.isdir(s):
         return s
     else:
-        raise argparse.ArgumentTypeError(f"readable_dir:{s} is not a valid path")
+        try:
+            os.makedirs(s, exist_ok=True)
+        except:
+            raise argparse.ArgumentTypeError(f"readable_dir:{s} is not a valid path")
 
 def str2bool(v):
     if isinstance(v, bool):

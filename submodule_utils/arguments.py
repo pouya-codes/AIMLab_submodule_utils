@@ -11,6 +11,7 @@ def dir_path(s):
     else:
         try:
             os.makedirs(s, exist_ok=True)
+            return s
         except:
             raise argparse.ArgumentTypeError(f"readable_dir:{s} is not a valid path")
 

@@ -11,6 +11,16 @@ def dir_path(s):
     else:
         raise argparse.ArgumentTypeError(f"readable_dir:{s} is not a valid path")
 
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError(f'{v} is not a Bollean value, boolean value expected.')
+
 def file_path(s):
     if os.path.isfile(s):
         return s

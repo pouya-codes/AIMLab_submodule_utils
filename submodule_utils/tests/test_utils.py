@@ -9,6 +9,28 @@ import submodule_utils as utils
 random.seed(256)
 
 class TestUtils(unittest.TestCase):
+
+    def test_get_inner_key_from_dict_of_dict(self):
+        d = {
+            'a': {
+                'a1': 1,
+                'a2': 2,
+                'a3': 3,
+            },
+            'b': {
+                'b1': 1,
+                'b2': 2,
+            },
+            'c': {
+                'c1': 1,
+            },
+        }
+        expected = ['a1', 'a2', 'a3', 'b1', 'b2', 'c1']
+        expected.sort()
+        inner_keys = utils.get_inner_key_from_dict_of_dict(d)
+        assert isinstance(inner_keys, list)
+        assert sorted(inner_keys) == expected
+
     def test_create_patch_id(self):
         path = '/path/to/patch/Tumor/CC/VOA-1234A/1234_5687.png'
         patch_pattern = utils.create_patch_pattern(

@@ -24,7 +24,8 @@ if [[ ! -d submodule_utils/tests/mock ]]; then
 fi
 
 mkdir -p submodule_utils/tests/outputs
+pytest -s -vv submodule_utils/tests/test_utils.py
 # pytest -s -vv submodule_utils/tests/test_manifest_arguments.py
 # pytest -s -vv submodule_utils/tests/test_metadata.py
-pytest -s -vv submodule_utils/tests/test_image_extract.py::test_SlidePatchExtractor_to_generate
+# pytest -s -vv submodule_utils/tests/test_image_extract.py::test_SlidePatchExtractor_to_generate
 # pytest -s -vv submodule_utils/tests/

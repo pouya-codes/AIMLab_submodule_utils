@@ -72,7 +72,7 @@ class AugmentPatchesMetadata(collections.abc.Iterable):
         if post_patch_id in self.recipes[pre_patch_id]:
             raise ValueError(f"{pre_patch_id} has already been agumented to {post_patch_id} in slides coords metadata.")
         else:
-            self.recipes[pre_patch_id][post_patch_id] = recipes
+            self.recipes[pre_patch_id][post_patch_id] = recipe
 
     def __iter__(self):
         """
@@ -93,52 +93,31 @@ class AugmentPatchesMetadata(collections.abc.Iterable):
         
         Parameters
         ----------
-        recipes : dict
+        recipes : AugmentPatchesMetadata
             The augmentation recipes to add.
         """
         for pre_patch_id, augmentations in recipes.items():
             if not pre_patch_id in self.recipes:
                 self.recipes[pre_patch_id] = { }
-            for post_patch_id, recipe in augmentations:
+            for post_patch_id, recipe in augmentations.items():
                 if post_patch_id in self.recipes[pre_patch_id]:
                     raise ValueError(
                             f"Recipe for augment patch {pre_patch_id} to "
                             f"{post_patch_id} is already added.")
                 self.recipes[pre_patch_id][post_patch_id] = recipe
 
-    def consume_recipes(self, recipes):
-        """Add augmentation recipes, or list of recipes to metadata.
-        Each recipes has a format specified by RECIPES below.
-
-        ```
-        PRE_PATCH_ID := the ID of patch before augmentating.
-        POST_PATCH_ID := the ID of patch after an augmentation.
-        TYPE := the type of augmentation used at this step of the sequence.
-        AUGMENTATION_PARAMETER := key-value pair specifying the parameters used at the augmentation step using the [[ TYPE ]] augmentation in the augment patches component.
-        RECIPES := {
-            [[ PRE_PATCH_ID ]]: {
-                [[ POST_PATCH_ID ]]: [
-                    {
-                        type: TYPE,
-                        [[ AUGMENTATION_PARAMETER ]],
-                        ...
-                    },
-                    ...
-                ],
-                ...
-            },
-            ...
-        }
-        ```
+    def consume_recipes(self, augmentations):
+        """Merge augemntation metadata.
         
         Parameters
         ----------
-        dict or (list of dict)
-            The augmentation recipes to add.
+        augmentation_metadata : AugmentPatchesMetadata or (list of AugmentPatchesMetadata)
+            The augmentations to add to this one.
         """
-        if not utils.is_iterable(recipes):
-            recipes = [recipes]
-        inner_keys = list(itertools.chain(
+        if not utils.is_iterable(augmentations):
+            augmentations = [augmentations]
+        recipes = list(map(lambda a: a.recipes, augmentations))
+        inner_keys = list(itertools.chain.from_iterable(
                 map(utils.get_inner_key_from_dict_of_dict, recipes)))
         len_inner_keys = len(inner_keys)
         inner_keys = set(inner_keys)

@@ -163,7 +163,7 @@ def get_inner_key_from_dict_of_dict(d):
         List of inner keys of dict with duplication.
     """
     inner_keys = [d[k].keys() for k in d.keys()]
-    return list(itertools.chain(inner_keys))
+    return list(itertools.chain.from_iterable(inner_keys))
 
 
 def invert_dict_of_dict(d):
@@ -344,7 +344,7 @@ def split_right_of_id(id):
     """
     return '/'.join(id.split('/')[:-1]), id.split('/')[-1]
 
-def snip_left_of_id(id):
+def split_left_of_id(id):
     """Function that removes the leftmost word from a string of '/' separated words. For example: 'Tumor/MMRd/VOA-100/256/10/0_0' becomes ('Tumor', 'MMRd/VOA-100/256/10/0_0',)
     """
     return id.split('/')[0], '/'.join(id.split('/')[1:])
@@ -603,7 +603,7 @@ def group_paths(paths, patch_pattern, include=[], exclude=[]):
     indices = sorted([patch_pattern[word] for word in words] + [
             id_nd.shape[1] - 2, id_nd.shape[1] - 1])
     id_nd = id_nd[:,indices]
-    id_nd = np.apply_along_axis(lambda r: np.array(['/'.join(r[:-1]), r[-1]]),
+    id_nd = np.apply_along_axis(lambda r: np.array(['/'.join(r[:-1]), r[-1]], dtype=id_nd.dtype),
             1, id_nd)
     group = { }
     for common_id, path in id_nd:

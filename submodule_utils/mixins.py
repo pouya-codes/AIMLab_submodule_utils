@@ -83,12 +83,12 @@ class OutputMixin(object):
         -------
         dict of (str: pandas.DataFrame)
             The dictionary of the summary tables in data frame. Contains:
+             - slide_patches
+             - patient_patches
+             - patient_slides
              - total_patches
              - total_slides
              - total_patients
-             - all_patches
-             - all_slides
-             - all_patients
         """
         groups['chunks'].sort(key=lambda chunk: chunk['id'])
 
@@ -103,7 +103,7 @@ class OutputMixin(object):
         all_patches = set()
         all_slides = set()
         all_patients = set()
-        cum_header = 'Overall' if self.is_tumor else 'Total'
+        cum_header = 'Overall' if self.is_binary else 'Total'
         headers = category_names + [cum_header]
         num_headers = len(headers)
         total_patches = pd.DataFrame(columns=headers)
@@ -158,9 +158,9 @@ class OutputMixin(object):
             total_patients['Total', label] = len(s)
         total_patients['Total', cum_header] = len(all_patients)
 
-        slide_patches.loc["Total"] = slide_patches.sum().astype(int)
         patient_patches.loc["Total"] = patient_patches.sum().astype(int)
-        all_patients.loc["Total"] = all_patients.sum().astype(int)
+        slide_patches.loc["Total"] = slide_patches.sum().astype(int)
+        patient_slides.loc["Total"] = patient_slides.sum().astype(int)
 
         return {
             'slide_patches': slide_patches,
@@ -190,18 +190,18 @@ class OutputMixin(object):
              - group_patches
              - group_slides
              - group_patients
-             - all_patches
-             - all_slides
-             - all_patients
+             - patient_patches
+             - slide_patches
+             - patient_slides
         """
         output = {
-            'all_patches': {},
-            'all_slides': {},
-            'all_patients': {},
+            'patient_patches': {},
+            'slide_patches': {},
+            'patient_slides': {},
         }
         groups['chunks'].sort(key=lambda chunk: chunk['id'])
         category_names = sorted([c.name for c in self.CategoryEnum])
-        cum_header = 'Overall' if self.is_tumor else 'Total'
+        cum_header = 'Overall' if self.is_binary else 'Total'
         headers = category_names + [cum_header]
         num_headers = len(headers)
         group_patches = pd.DataFrame(columns=headers)
@@ -209,6 +209,7 @@ class OutputMixin(object):
         group_patients = pd.DataFrame(columns=headers)
         for chunk in groups['chunks']:
             try:
+                print("chunk id", chunk['id'])
                 group_name = group_names[chunk['id']]
             except KeyError:
                 group_name = f"Group {chunk['id'] + 1}"
@@ -268,13 +269,12 @@ class OutputMixin(object):
                 group_patients[group_name, label] = len(s)
             group_patients[group_name, cum_header] = len(all_patients)
 
-            all_patches.loc["Total"] = all_patches.sum().astype(int)
-            all_slides.loc["Total"] = all_slides.sum().astype(int)
-            all_patients.loc["Total"] = all_patients.sum().astype(int)
-
-            output['all_patches'][group_name] = all_patches
-            output['all_slides'][group_name] = all_slides
-            output['all_patients'][group_name] = all_patients
+            patient_patches.loc["Total"] = patient_patches.sum().astype(int)
+            slide_patches.loc["Total"] = slide_patches.sum().astype(int)
+            patient_slides.loc["Total"] = patient_slides.sum().astype(int)
+            output['patient_patches'][group_name] = patient_patches
+            output['slide_patches'][group_name] = slide_patches
+            output['patient_slides'][group_name] = patient_slides
         
         group_patches.loc['Total'] = group_patches.sum().astype(int)
         group_slides.loc['Total'] = group_slides.sum().astype(int)

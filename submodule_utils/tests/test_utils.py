@@ -10,7 +10,24 @@ random.seed(256)
 
 class TestUtils(unittest.TestCase):
 
-    def test_get_inner_key_from_dict_of_dict(self):
+    def test_MANY(self):
+        """Test many small functions
+        """
+        # test utils.list_to_space_sep_str
+        expected = "1 2 3 4 5 6"
+        actual  = utils.list_to_space_sep_str([1, 2, 3, 4, 5, 6])
+        assert expected == actual
+
+        # test utils.count
+        assert 2 == utils.count(lambda x: x == True,
+                [True, False, True, False, False])
+        
+        # test utils.merge_list_of_list
+        expected = [1, 2, 3, 4, 5, 6]
+        actual = utils.merge_list_of_list([[1, 2], [3, 4], [5, 6]])
+        assert expected == actual
+
+        # test utils.get_inner_key_from_dict_of_dict
         d = {
             'a': {
                 'a1': 1,

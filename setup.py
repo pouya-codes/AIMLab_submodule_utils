@@ -4,6 +4,7 @@ install_requires=[
         'pyyaml',
         'h5py',
         'matplotlib',
+        'pandas',
         'Shapely',
         'numpy',
         'pytest']

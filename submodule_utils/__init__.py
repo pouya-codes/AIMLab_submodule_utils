@@ -81,6 +81,22 @@ def load_json(filepath):
     with open(filepath) as f:
         return json.load(f)
 
+
+def save_json(filepath, obj):
+    """Serialize object as a JSON formatted stream and save to a file.
+
+    Parameters
+    ----------
+    filepath : str
+        Path of file to save JSON.
+
+    obj : dict
+        Object to serialize.
+    """
+    with open(filepath, 'w') as f:
+        json.dump(obj, f)
+
+
 def load_str(filepath):
     with open(filepath, 'r') as f:
         return f.read()
@@ -150,6 +166,10 @@ def enum_to_dict(e):
     """
     return {s.name: s.value for s in e}
 
+list_to_space_sep_str = lambda l : ' '.join(map(str, l))
+
+merge_list_of_list = lambda ll: list(itertools.chain.from_iterable(ll))
+
 def get_inner_key_from_dict_of_dict(d):
     """Get the inner keys of a of dict of dict.
 
@@ -208,8 +228,8 @@ def count(f, l):
 def get_patient_regex(dataset_origin):
     return DATASET_TO_PATIENT_REGEX[dataset_origin.lower()]
 
-def get_paths(rootpath, pattern, extensions=['png']):
-    '''Get paths for slide / patch, forcing all paths in list to be the same path length (i.e. item_path.split('/') are all the same length)
+def get_paths(rootpath, pattern=None, extensions=['png']):
+    """Get paths for files including paths for slides and patches.
 
     Parameters
     ----------
@@ -217,7 +237,7 @@ def get_paths(rootpath, pattern, extensions=['png']):
         The rootpath 
 
     pattern : dict
-        The slide or patch pattern
+        The slide or patch pattern. If pattern is passed, then we only retrieve file paths that have the same path length (i.e. item_path.split('/') are all the same length)
 
     extensions : list of str
         List of file extensions to search for
@@ -226,15 +246,20 @@ def get_paths(rootpath, pattern, extensions=['png']):
     -------
     list of str
         List of slide paths
-    '''
+    """
     paths = [ ]
     for extension in extensions:
         path_wildcard = rootpath
-        for i in range(len(pattern)):
-            path_wildcard = os.path.join(path_wildcard, '**')
-        path_wildcard = os.path.join(path_wildcard, '*.' + extension)
-        paths.extend(glob.glob(os.path.join(path_wildcard)))
+        if pattern is None:
+            path_wildcard = os.path.join(path_wildcard, '**', '*.' + extension)
+            paths.extend(glob.glob(path_wildcard, recursive=True))
+        else:
+            for i in range(len(pattern)):
+                path_wildcard = os.path.join(path_wildcard, '**')
+            path_wildcard = os.path.join(path_wildcard, '*.' + extension)
+            paths.extend(glob.glob(path_wildcard))
     return paths
+
 
 def get_patch_paths(rootpath, patch_pattern, filter_labels={}):
     """Get patch paths from patch location that match the patch paths. Filters patch paths by values of words.
@@ -318,8 +343,10 @@ def strip_extension(path):
     p = Path(path)
     return str(p.with_suffix(''))
 
-def create_patch_id(path, patch_pattern):
-    """Function to create patch id
+def create_patch_id(path, patch_pattern=None, rootpath=None):
+    """Function to create patch ID either by
+    1) patch_pattern to find the words to use for ID
+    2) rootpath to clip the patch path from the left to form patch ID
 
     Parameters
     ----------
@@ -329,15 +356,22 @@ def create_patch_id(path, patch_pattern):
     patch_pattern : dict
         Dictionary describing the directory structure of the patch path. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'.
 
+    rootpath : str
+        The root directory path containing patch to clip from patch path. Assumes patch contains rootpath.
+
     Returns
     -------
     patch_id : string
         Remove useless information before patch id for h5 file storage
     """
-    len_of_patch_id = -(len(patch_pattern) + 1)
-    patch_id = strip_extension(path).split('/')[len_of_patch_id:]
-    patch_id = '/'.join(patch_id)
-    return patch_id
+    if patch_pattern is not None:
+        len_of_patch_id = -(len(patch_pattern) + 1)
+        patch_id = strip_extension(path).split('/')[len_of_patch_id:]
+        return '/'.join(patch_id)
+    elif rootpath is not None:
+        return strip_extension(path[len(rootpath):].lstrip('/'))
+    else:
+        return ValueError("Either patch_pattern or rootpath should be set.")
 
 def split_right_of_id(id):
     """Function that removes the rightmost word from an ID string of '/' separated words. For example: 'Tumor/MMRd/VOA-100/256/10/0_0' becomes ('Tumor/MMRd/VOA-100/256/10', '0_0',)

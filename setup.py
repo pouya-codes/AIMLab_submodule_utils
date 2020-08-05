@@ -3,6 +3,8 @@ from setuptools import setup, find_packages
 install_requires=[
         'pyyaml',
         'h5py',
+        'openslide-python',
+        'tabulate',
         'matplotlib',
         'pandas',
         'Shapely',

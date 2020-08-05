@@ -166,9 +166,11 @@ def enum_to_dict(e):
     """
     return {s.name: s.value for s in e}
 
-list_to_space_sep_str = lambda l : ' '.join(map(str, l))
+list_to_space_sep_str = lambda l: ' '.join(map(str, l))
 
 merge_list_of_list = lambda ll: list(itertools.chain.from_iterable(ll))
+
+map_to_list = lambda f, l: list(map(f, l))
 
 def get_inner_key_from_dict_of_dict(d):
     """Get the inner keys of a of dict of dict.

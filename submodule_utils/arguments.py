@@ -131,7 +131,8 @@ class CustomHelpFormatter(
     TODO: trying to make help string look better
     """
     def add_argument(self, action):
-        action.help += '\n'
+        if action.help is not None:
+            action.help += '\n'
         super().add_argument(action)
 
     def _format_action(self, action):
@@ -143,5 +144,5 @@ class AIMArgumentParser(argparse.ArgumentParser):
     """
     def __init__(self, *args, description=None, epilog=None, **kwargs):
         super().__init__(*args,
-                # formatter_class=CustomHelpFormatter,
+                formatter_class=CustomHelpFormatter,
                 description=description, epilog=epilog, **kwargs)

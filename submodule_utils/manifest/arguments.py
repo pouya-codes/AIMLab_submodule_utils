@@ -91,7 +91,7 @@ class AIMManifestArgumentManager(object):
         argparse.Namespace
             The arguments
         """
-        parser = AIMArgumentParser(description=self.description, epilog=self.epilog)
+        parser = argparse.ArgumentParser(description=self.description, epilog=self.epilog)
         self.create_parser(parser)
         experiment_manifest = ExperimentManifest(experiment_manifest_file)
         component_manifest = experiment_manifest.get_component_config(component_id)

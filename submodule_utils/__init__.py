@@ -26,6 +26,8 @@ import h5py
 import json
 import yaml
 
+
+DEAFULT_SEED=256
 DATASET_TO_PATIENT_REGEX = {
     'ovcare': re.compile(r"^[A-Z]*-?(\d*).*\(?.*\)?.*$"),
     'tcga':  re.compile(r"^(TCGA-\w+-\w+)-")
@@ -572,3 +574,31 @@ def patient_slide_patch_count(patch_ids_path, prefix, is_multiscale):
     print('Total Slides: {}'.format(len(total_slides)))
 
     return patient_dict
+
+def set_random_seed(seed_value):
+    # 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+    try :
+        import os
+        os.environ['PYTHONHASHSEED'] = str(seed_value)
+    except:
+        pass
+    # 2. Set `python` built-in pseudo-random generator at a fixed value
+    try:
+        import random
+        random.seed(seed_value)
+    except:
+        pass
+    # 3. Set `numpy` pseudo-random generator at a fixed value
+    try :
+        import numpy as np
+        np.random.seed(seed_value)
+    except:
+        pass
+
+    # 4. Set `pytorch` pseudo-random generator at a fixed value
+    try :
+        import torch
+        torch.manual_seed(seed_value)
+    except:
+        pass
+    print(f"random_seed set to={seed_value}")

@@ -170,9 +170,32 @@ def enum_to_dict(e):
 
 list_to_space_sep_str = lambda l: ' '.join(map(str, l))
 
-merge_list_of_list = lambda ll: list(itertools.chain.from_iterable(ll))
+def dict_to_space_sep_eql(d):
+    """Converts key and value in dict to str of space separated key=value
+
+    Parameters
+    ----------
+    d : dict
+
+    Returns
+    -------
+    str
+    """
+    return ' '.join(['='.join(map(str, t)) for t in d.items()])
+
+def merge_list_of_list(ll):
+    """Concatenate iterable of iterables into one list."""
+    return list(itertools.chain.from_iterable(ll))
+
+def map_to_list(f, l):
+    """Does map operation and then converts map object to a list."""
+    return list(map(f, l))
 
 map_to_list = lambda f, l: list(map(f, l))
+
+def merge_sets(ls):
+    """Merge list of sets into one set."""
+    return set(itertools.chain.from_iterable(ls))
 
 def get_inner_key_from_dict_of_dict(d):
     """Get the inner keys of a of dict of dict.

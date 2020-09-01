@@ -43,7 +43,7 @@ class GroovyAnnotation(object):
     def count_polygons_area(cls, polygons):
         return sum(map(lambda p: p.area, polygons))
 
-    def __init__(self, annotation_file):
+    def __init__(self, annotation_file, logger=None):
         """
         Parameters
         ----------
@@ -53,6 +53,8 @@ class GroovyAnnotation(object):
         """
         self.slide_name = utils.path_to_filename(annotation_file)
         self.annotation_file = annotation_file
+        if logger:
+            self.logger = logger
         self.__set_up()
 
     def __set_up(self):
@@ -75,6 +77,10 @@ class GroovyAnnotation(object):
                         vertices = self.get_vertices(line)
                         self.paths[label].append(self.get_path(vertices))
                         self.polygons[label].append(self.get_polygon(vertices))
+                    else:
+                        if self.logger:
+                            self.logger.info(f"Slide {self.slide_name} has annotation(label) without name.")
+
 
     def get_area(self, factor=1.0):
         return {label: factor * self.count_polygons_area(polygons) \

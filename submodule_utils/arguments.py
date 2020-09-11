@@ -31,6 +31,14 @@ def file_path(s):
     else:
         raise argparse.ArgumentTypeError(f"readable_file:{s} is not a valid path")
 
+def output_file_path(s):
+    try:
+        os.makedirs(os.path.dirname(s), exist_ok=True)
+        return s
+    except:
+        raise argparse.ArgumentTypeError(f"readable_file:{s} is not a valid path")
+
+
 def dataset_origin(s):
     if s.lower() in DATASET_ORIGINS:
         return s.lower()

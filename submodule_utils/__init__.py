@@ -150,7 +150,6 @@ def extract_yaml_from_file(filepath):
     dict
         The extracted yaml as dictionary
 
-    TODO: incorrect function name. extract_yaml_from_json should be named extract_yaml_from_file
     """
     data = load_str(filepath)
     return extract_yaml_from_str(data)

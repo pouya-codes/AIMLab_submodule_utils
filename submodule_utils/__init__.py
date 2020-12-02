@@ -33,11 +33,11 @@ import numpy as np
 # Modules
 from submodule_utils.subtype_enum import BinaryEnum
 
-
-DEAFULT_SEED=256
+DEAFULT_SEED = 256
 DATASET_TO_PATIENT_REGEX = {
     'ovcare': re.compile(r"^[A-Z]*-?(\d*).*\(?.*\)?.*$"),
-    'tcga':  re.compile(r"^(TCGA-\w+-\w+)-")
+    'tcga': re.compile(r"^(TCGA-\w+-\w+)-"),
+    'other': re.compile(r".*")
 }
 
 DATASET_ORIGINS = DATASET_TO_PATIENT_REGEX.keys()
@@ -46,8 +46,10 @@ PATCH_PATTERN_WORDS = [
     'annotation', 'subtype', 'slide', 'patch_size',
     'magnification']
 
+
 def is_iterable(x):
     return isinstance(x, collections.abc.Iterable)
+
 
 def get_dirname_of(filepath):
     """Get absolute path of the immediate directory the file is in
@@ -64,6 +66,7 @@ def get_dirname_of(filepath):
     """
     return os.path.dirname(os.path.abspath(filepath))
 
+
 def path_to_filename(filepath):
     """Gets filename from path
 
@@ -78,6 +81,7 @@ def path_to_filename(filepath):
         The filename i.e. TCGA-A5-A0GH-01Z-00-DX1.22005F4A-0E77-4FCB-B57A-9944866263AE
     """
     return '.'.join(filepath.split('/')[-1].split('.')[:-1])
+
 
 def load_json(filepath):
     with open(filepath) as f:
@@ -103,15 +107,18 @@ def load_str(filepath):
     with open(filepath, 'r') as f:
         return f.read()
 
+
 def load_yaml(filepath):
     """Directly load YAML from file
     """
     return yaml.safe_load(load_str(filepath))
 
+
 def get_yaml_regex():
     """Get Regex to find YAML section in text
     """
     return r"^---(\r|\n|.)+\.\.\.$"
+
 
 def extract_yaml_from_str(data):
     """Extract YAML section string data, in other words it looks for a section in the formatted string that has '---' above and '...' below.
@@ -131,6 +138,7 @@ def extract_yaml_from_str(data):
     match = pattern.search(data)
     yaml_str = match.group(0)
     return yaml.load(yaml_str, Loader=yaml.FullLoader)
+
 
 def extract_yaml_from_file(filepath):
     """Extract YAML section from a TXT file at filepath, in other words it looks for a section in the file that has '---' above and '...' below.
@@ -154,9 +162,10 @@ def extract_yaml_from_file(filepath):
     data = load_str(filepath)
     return extract_yaml_from_str(data)
 
+
 def enum_to_dict(e):
     """Convert enum.Enum to a dict
-    
+
     Parameters
     ----------
     e : enum.Enum
@@ -167,7 +176,9 @@ def enum_to_dict(e):
     """
     return {s.name: s.value for s in e}
 
+
 list_to_space_sep_str = lambda l: ' '.join(map(str, l))
+
 
 def dict_to_space_sep_eql(d):
     """Converts key and value in dict to str of space separated key=value
@@ -182,19 +193,24 @@ def dict_to_space_sep_eql(d):
     """
     return ' '.join(['='.join(map(str, t)) for t in d.items()])
 
+
 def merge_list_of_list(ll):
     """Concatenate iterable of iterables into one list."""
     return list(itertools.chain.from_iterable(ll))
+
 
 def map_to_list(f, l):
     """Does map operation and then converts map object to a list."""
     return list(map(f, l))
 
+
 map_to_list = lambda f, l: list(map(f, l))
+
 
 def merge_sets(ls):
     """Merge list of sets into one set."""
     return set(itertools.chain.from_iterable(ls))
+
 
 def get_inner_key_from_dict_of_dict(d):
     """Get the inner keys of a of dict of dict.
@@ -214,12 +230,12 @@ def get_inner_key_from_dict_of_dict(d):
 
 def invert_dict_of_dict(d):
     """Invert the inner and outer keys of dict of dict
-    
+
     Parameters
     ----------
     d : dict of dict
         Has form {key1: {key2: val}}
-    
+
     Returns
     -------
     dict of dict
@@ -231,7 +247,8 @@ def invert_dict_of_dict(d):
             if k2 not in o:
                 o[k2] = {}
             o[k2][k1] = val
-    return o 
+    return o
+
 
 def count(f, l):
     """Count the number of occurances in a list.
@@ -240,10 +257,10 @@ def count(f, l):
     ----------
     f : function
         Function that maps element in list to bool
-    
+
     l : list
         List to count occurances
-    
+
     Returns
     -------
     int
@@ -251,8 +268,10 @@ def count(f, l):
     """
     return len(list(filter(f, l)))
 
+
 def get_patient_regex(dataset_origin):
     return DATASET_TO_PATIENT_REGEX[dataset_origin.lower()]
+
 
 def get_paths(rootpath, pattern=None, extensions=['png']):
     """Get paths for files including paths for slides and patches.
@@ -260,7 +279,7 @@ def get_paths(rootpath, pattern=None, extensions=['png']):
     Parameters
     ----------
     rootpath : str
-        The rootpath 
+        The rootpath
 
     pattern : dict
         The slide or patch pattern. If pattern is passed, then we only retrieve file paths that have the same path length (i.e. item_path.split('/') are all the same length)
@@ -273,7 +292,7 @@ def get_paths(rootpath, pattern=None, extensions=['png']):
     list of str
         List of slide paths
     """
-    paths = [ ]
+    paths = []
     for extension in extensions:
         path_wildcard = rootpath
         if pattern is None:
@@ -297,17 +316,18 @@ def get_patch_paths(rootpath, patch_pattern, filter_labels={}):
     """
     patch_path_wildcard = rootpath
     patterns = sorted([[v, k] for k, v in patch_pattern.items()],
-            key=lambda x: x[0])
+                      key=lambda x: x[0])
     patterns = map(lambda x: x[1], patterns)
     for word in patterns:
         if word in filter_labels:
             patch_path_wildcard = os.path.join(patch_path_wildcard,
-                    filter_labels[word])
+                                               filter_labels[word])
         else:
             patch_path_wildcard = os.path.join(patch_path_wildcard, '**')
     patch_path_wildcard = os.path.join(patch_path_wildcard, '*.png')
     patch_paths = glob.glob(os.path.join(patch_path_wildcard))
     return patch_paths
+
 
 def create_patch_pattern(patch_pattern):
     '''Given a string of '/' separated words, create a dict of the words and their ordering in the string.
@@ -323,11 +343,12 @@ def create_patch_pattern(patch_pattern):
         Empty dict if patch pattern is '', otherwise each word becomes a dict key with int ID giving position of the key in patch pattern.
     '''
     if patch_pattern == '':
-        return { }
+        return {}
     else:
         if type(patch_pattern) is str:
             patch_pattern = patch_pattern.split('/')
-        return {k: i for i,k in enumerate(patch_pattern)}
+        return {k: i for i, k in enumerate(patch_pattern)}
+
 
 def create_category_enum(is_binary, subtypes=None):
     """Create CategoryEnum used to group patch paths. The key in the CategoryEnum is the string fragment in the patch path to lookup and the value in the CategoryEnum is group ID to group the patch.
@@ -353,6 +374,7 @@ def create_category_enum(is_binary, subtypes=None):
         else:
             raise NotImplementedError('create_category_enum: is_binary is True and no subtypes given')
 
+
 def strip_extension(path):
     """Function to strip file extension
 
@@ -368,6 +390,7 @@ def strip_extension(path):
     """
     p = Path(path)
     return str(p.with_suffix(''))
+
 
 def create_patch_id(path, patch_pattern=None, rootpath=None):
     """Function to create patch ID either by
@@ -399,15 +422,18 @@ def create_patch_id(path, patch_pattern=None, rootpath=None):
     else:
         return ValueError("Either patch_pattern or rootpath should be set.")
 
+
 def split_right_of_id(id):
     """Function that removes the rightmost word from an ID string of '/' separated words. For example: 'Tumor/MMRd/VOA-100/256/10/0_0' becomes ('Tumor/MMRd/VOA-100/256/10', '0_0',)
     """
     return '/'.join(id.split('/')[:-1]), id.split('/')[-1]
 
+
 def split_left_of_id(id):
     """Function that removes the leftmost word from a string of '/' separated words. For example: 'Tumor/MMRd/VOA-100/256/10/0_0' becomes ('Tumor', 'MMRd/VOA-100/256/10/0_0',)
     """
     return id.split('/')[0], '/'.join(id.split('/')[1:])
+
 
 def get_slide_by_patch_id(patch_id, patch_pattern):
     """Function to obtain slide id from patch id
@@ -429,7 +455,7 @@ def get_slide_by_patch_id(patch_id, patch_pattern):
 
 
 def get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum, is_binary=False):
-    """Get category label from patch id. The label can be either 'annotation' or 'subtype' based on is_binary flag. 
+    """Get category label from patch id. The label can be either 'annotation' or 'subtype' based on is_binary flag.
 
     Parameters
     ----------
@@ -489,7 +515,7 @@ def get_magnification_by_patch_id(patch_id, patch_pattern):
     int
         Patch magnification
     """
-    return int(patch_id.split('/')[patch_pattern['magnification']]) 
+    return int(patch_id.split('/')[patch_pattern['magnification']])
 
 
 def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
@@ -512,6 +538,8 @@ def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
     """
     match = re.search(get_patient_regex(dataset_origin), slide_id)
     if match:
+        if dataset_origin == "other":
+            return match.group(0)
         return match.group(1)
     else:
         raise NotImplementedError(
@@ -519,14 +547,14 @@ def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
 
 
 def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, CategoryEnum,
-        is_binary=False, dataset_origin='ovcare'):
+                                            is_binary=False, dataset_origin='ovcare'):
     """Creates a dict locator for patch paths like so {subtype: {patient: {slide_id: [patch_path]}}
 
     Parameters
     ----------
     patch_paths : list
         List of absolute patch paths
-    
+
     patch_pattern : dict
         Dictionary describing the directory structure of the patch paths. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'
 
@@ -549,7 +577,7 @@ def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, Category
     for patch_path in patch_paths:
         patch_id = create_patch_id(patch_path, patch_pattern)
         patch_subtype = get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum,
-                is_binary=is_binary).name
+                                              is_binary=is_binary).name
         if patch_subtype not in subtype_patient_slide_patch:
             subtype_patient_slide_patch[patch_subtype] = {}
         slide_id = get_slide_by_patch_id(patch_id, patch_pattern)
@@ -611,7 +639,7 @@ def group_ids(ids, patch_pattern, include=[], exclude=[]):
 
     include : iterable of str
         The words to group by. By default includes all words.
-    
+
     exclude : iterable of str
         The words to exclude.
 
@@ -625,11 +653,11 @@ def group_ids(ids, patch_pattern, include=[], exclude=[]):
     if include:
         words = words & set(include)
     indices = sorted([patch_pattern[word] for word in words] + [
-            id_nd.shape[1] - 2, id_nd.shape[1] - 1])
-    id_nd = id_nd[:,indices]
+        id_nd.shape[1] - 2, id_nd.shape[1] - 1])
+    id_nd = id_nd[:, indices]
     id_nd = np.apply_along_axis(lambda r: np.array(['/'.join(r[:-1]), r[-1]]),
-            1, id_nd)
-    group = { }
+                                1, id_nd)
+    group = {}
     for common_id, id in id_nd:
         if common_id not in group:
             group[common_id] = []
@@ -661,11 +689,11 @@ def group_paths(paths, patch_pattern, include=[], exclude=[]):
     if include:
         words = words & set(include)
     indices = sorted([patch_pattern[word] for word in words] + [
-            id_nd.shape[1] - 2, id_nd.shape[1] - 1])
-    id_nd = id_nd[:,indices]
+        id_nd.shape[1] - 2, id_nd.shape[1] - 1])
+    id_nd = id_nd[:, indices]
     id_nd = np.apply_along_axis(lambda r: np.array(['/'.join(r[:-1]), r[-1]], dtype=id_nd.dtype),
-            1, id_nd)
-    group = { }
+                                1, id_nd)
+    group = {}
     for common_id, path in id_nd:
         if common_id not in group:
             group[common_id] = []
@@ -693,7 +721,7 @@ def read_data_ids(data_id_path):
 
 
 def count_subtype(input_src, patch_pattern, CategoryEnum,
-        is_binary=False):
+                  is_binary=False):
     """Function to count the number of patches for each subtype
 
     Parameters
@@ -719,7 +747,8 @@ def count_subtype(input_src, patch_pattern, CategoryEnum,
         contents = input_src
     else:
         raise NotImplementedError(
-            'Data type of input_src needs to be str or list.' + type(input_src).__name__ + ' is currently not supported. Consider submitting a Pull Request to support this feature.')
+            'Data type of input_src needs to be str or list.' + type(
+                input_src).__name__ + ' is currently not supported. Consider submitting a Pull Request to support this feature.')
 
     if is_binary:
         count_per_subtype = np.zeros(2)
@@ -729,7 +758,7 @@ def count_subtype(input_src, patch_pattern, CategoryEnum,
     for patch_path in contents:
         patch_id = create_patch_id(patch_path, patch_pattern)
         cur_label = get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum,
-                is_binary=is_binary).value
+                                          is_binary=is_binary).value
         count_per_subtype[cur_label] = count_per_subtype[cur_label] + 1.
     return count_per_subtype
 
@@ -757,11 +786,17 @@ def patient_slide_patch_count(patch_ids_path, prefix, is_multiscale):
 
     def _latex_formatter(counts, prefix, percentage=False):
         if not percentage:
-            print(r'{} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} \\'.format(
-                prefix, int(counts[0]), int(counts[1]), int(counts[2]), int(counts[3]), int(counts[4]), int(counts.sum())))
+            print(
+                r'{} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} & \num[group-separator={{,}}]{{{}}} \\'.format(
+                    prefix, int(counts[0]), int(counts[1]), int(counts[2]), int(counts[3]), int(counts[4]),
+                    int(counts.sum())))
         else:
             print(r'{} & {}\% & {}\% & {}\% & {}\% & {}\% & \num[group-separator={{,}}]{{{}}} \\'.format(
-                prefix, np.around(counts[0]/counts.sum() * 100, decimals=2), np.around(counts[1]/counts.sum() * 100, decimals=2), np.around(counts[2]/counts.sum() * 100, decimals=2), np.around(counts[3]/counts.sum() * 100, decimals=2), np.around(counts[4]/counts.sum() * 100, decimals=2), int(counts.sum())))
+                prefix, np.around(counts[0] / counts.sum() * 100, decimals=2),
+                np.around(counts[1] / counts.sum() * 100, decimals=2),
+                np.around(counts[2] / counts.sum() * 100, decimals=2),
+                np.around(counts[3] / counts.sum() * 100, decimals=2),
+                np.around(counts[4] / counts.sum() * 100, decimals=2), int(counts.sum())))
 
     slide_count = np.zeros(5)
     patient_count = np.zeros(5)
@@ -783,9 +818,10 @@ def patient_slide_patch_count(patch_ids_path, prefix, is_multiscale):
 
     return patient_dict
 
+
 def set_random_seed(seed_value):
     # 1. Set `PYTHONHASHSEED` environment variable at a fixed value
-    try :
+    try:
         import os
         os.environ['PYTHONHASHSEED'] = str(seed_value)
     except:
@@ -797,14 +833,14 @@ def set_random_seed(seed_value):
     except:
         pass
     # 3. Set `numpy` pseudo-random generator at a fixed value
-    try :
+    try:
         import numpy as np
         np.random.seed(seed_value)
     except:
         pass
 
     # 4. Set `pytorch` pseudo-random generator at a fixed value
-    try :
+    try:
         import torch
         torch.manual_seed(seed_value)
     except:

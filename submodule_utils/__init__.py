@@ -846,3 +846,18 @@ def set_random_seed(seed_value):
     except:
         pass
     print(f"random_seed set to={seed_value}")
+
+##########
+# Amirali
+def filter_path(path_list, pattern, word):
+
+    ''' Function to filter the subtype for
+        running multiple jobs'''
+        
+    paths = []
+    for path in path_list:
+        id = create_patch_id(path, pattern)
+        label = id.split('/')[pattern['subtype']]
+        if label.upper()==word.upper():
+            paths.append(path)
+    return paths

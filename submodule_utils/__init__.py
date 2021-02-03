@@ -849,15 +849,35 @@ def set_random_seed(seed_value):
 
 ##########
 # Amirali
-def filter_path(path_list, pattern, word):
+def filter_path(path_list, pattern, filter, n_process):
 
     ''' Function to filter the subtype for
         running multiple jobs'''
-        
+
+    path_list.sort()
+
+    if len(filter)>1:
+        raise ValueError(f"Only one subtype should be filtered, but here we have"
+                         f": {list(word.keys())}")
+
+    subtype, num = next(iter(filter.items()))
+    # Filtering slides based on subtype
     paths = []
     for path in path_list:
         id = create_patch_id(path, pattern)
         label = id.split('/')[pattern['subtype']]
-        if label.upper()==word.upper():
+        if label.upper()==subtype.upper():
             paths.append(path)
+
+    start = (num-1)*n_process
+    end   = num*n_process if num*n_process<len(paths) else len(paths)
+    if start > len(paths) or start < 0:
+        raise ValueError(f"Total number of slides in this subtype is {len(paths)}"
+                         f" and by using {n_process} CPUs, but you are assuming "
+                         f"for at least {start} slides! --> decrease (increase) {num}")
+
+    paths = paths[start:end]
+
+    if len(paths)==0:
+        raise ValueError(f"No slide is selected!")
     return paths

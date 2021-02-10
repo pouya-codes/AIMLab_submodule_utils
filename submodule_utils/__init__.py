@@ -849,25 +849,37 @@ def set_random_seed(seed_value):
 
 ##########
 # Amirali
-def filter_path(path_list, pattern, filter, n_process):
+def filter_path(path_list, pattern, filter, slide_idx, n_process):
 
     ''' Function to filter the subtype for
         running multiple jobs'''
 
     path_list.sort()
 
-    if len(filter)>1:
-        raise ValueError(f"Only one subtype should be filtered, but here we have"
-                         f": {list(word.keys())}")
+    if len(filter)>0:
+        subtype_flag = False if 'subtype' not in pattern else True
+        if len(filter)>0 and subtype_flag:
+            raise ValueError("Subtype filter is set when there is no subtype in the pattern!")
 
-    subtype, num = next(iter(filter.items()))
-    # Filtering slides based on subtype
-    paths = []
-    for path in path_list:
-        id = create_patch_id(path, pattern)
-        label = id.split('/')[pattern['subtype']]
-        if label.upper()==subtype.upper():
-            paths.append(path)
+        if len(filter)>1:
+            raise ValueError(f"Only one subtype should be filtered, but here we have"
+                             f": {list(word.keys())}")
+
+        subtype, num = next(iter(filter.items()))
+        # Filtering slides based on subtype
+        paths = []
+        for path in path_list:
+            id = create_patch_id(path, pattern)
+            label = id.split('/')[pattern['subtype']]
+            if label.upper()==subtype.upper():
+                paths.append(path)
+
+    elif slide_idx is not None:
+        paths = path_list
+        num   = slide_idx
+
+    else:
+        return path_list
 
     start = (num-1)*n_process
     end   = num*n_process if num*n_process<len(paths) else len(paths)

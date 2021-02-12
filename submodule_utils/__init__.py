@@ -858,7 +858,7 @@ def filter_path(path_list, pattern, filter, slide_idx, n_process):
 
     if len(filter)>0:
         subtype_flag = False if 'subtype' not in pattern else True
-        if len(filter)>0 and subtype_flag:
+        if len(filter)>0 and not subtype_flag:
             raise ValueError("Subtype filter is set when there is no subtype in the pattern!")
 
         if len(filter)>1:
@@ -892,4 +892,36 @@ def filter_path(path_list, pattern, filter, slide_idx, n_process):
 
     if len(paths)==0:
         raise ValueError(f"No slide is selected!")
+    return paths
+
+##########
+# Amirali
+def filter_patches_based_slides(patch_location, pattern, slide_idx, n_process):
+    ''' Function to filter get all the patches from specifc slides'''
+
+    if slide_idx is None:
+        paths = get_paths(patch_location, pattern=pattern, extensions=['png'])
+        return paths
+
+    if 'slide' not in pattern:
+        raise ValueError("Selecting is based on SLIDE in pattern which is not available here")
+
+    add = (pattern['slide']+1)*'/*'
+    slides = glob.glob(f"{patch_location}{add}")
+
+    slides.sort()
+
+    num   = slide_idx
+    start = (num-1)*n_process
+    end   = num*n_process if num*n_process<len(slides) else len(slides)
+    if start > len(slides) or start < 0:
+        raise ValueError(f"Total number of slides in this subtype is {len(slides)}"
+                         f" and by using {n_process} CPUs, but you are assuming "
+                         f"for at least {start} slides! --> decrease (increase) {num}")
+
+    slides = slides[start:end]
+    paths = []
+    add = (max(pattern.values())-pattern['slide'])*'/*'
+    for slide in slides:
+        paths.extend(glob.glob(f"{slide}{add}/*.png"))
     return paths

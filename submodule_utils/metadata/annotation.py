@@ -37,13 +37,17 @@ class GroovyAnnotation(object):
     def get_polygon(cls, vertices):
         """Get single region formed by vertices as shapely.geometry.Polygon
         """
-        return shapely.geometry.Polygon(vertices)
+        polygon = shapely.geometry.Polygon(vertices)
+        # remove intercross
+        if not polygon.is_valid:
+            polygon = polygon.buffer(0)
+        return polygon
 
     @classmethod
     def count_polygons_area(cls, polygons):
         return sum(map(lambda p: p.area, polygons))
 
-    def __init__(self, annotation_file, logger=None):
+    def __init__(self, annotation_file, overlap_threshold=1.0, logger=None):
         """
         Parameters
         ----------
@@ -55,6 +59,9 @@ class GroovyAnnotation(object):
         self.annotation_file = annotation_file
         if logger:
             self.logger = logger
+        self.overlap_threshold = overlap_threshold
+        if self.overlap_threshold > 1.0:
+            raise ValueError("overlap_threshold should be less than 1!")
         self.__set_up()
 
     def __set_up(self):
@@ -94,8 +101,18 @@ class GroovyAnnotation(object):
     def points_to_label(self, points):
         """Get label of region that contains all the points, or return None if points are not in any region.
         """
-        for label, paths in self.paths.items():
-            for path in paths:
-                if np.sum(path.contains_points(points)) == 4:
-                    return label
+        if self.overlap_threshold==1:
+            for label, paths in self.paths.items():
+                for path in paths:
+                    if np.sum(path.contains_points(points)) == 4:
+                        return label
+        else:
+            # Check the ratio of overlapping area
+            patch = shapely.geometry.Polygon(points)
+            for label, polygons in self.polygons.items():
+                for polygon in polygons:
+                    intersection = patch.intersection(polygon)
+                    percent_area = intersection.area / patch.area
+                    if percent_area >= self.overlap_threshold:
+                        return label
         return None

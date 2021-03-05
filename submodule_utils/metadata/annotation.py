@@ -19,12 +19,23 @@ class GroovyAnnotation(object):
         """
         return line.split('[')[0].strip()
 
-    @classmethod
-    def get_vertices(cls, line):
+    # @classmethod
+    # def get_vertices(cls, line):
+    #     """Get region segment vertices from a line in annotation TXT
+    #     """
+    #     xy = [float(s) for s in re.findall(cls.POINT_REGEX, line)]
+    #     return [[x,y] for x, y in zip(xy[::2], xy[1::2])]
+    def get_vertices(self, line):
         """Get region segment vertices from a line in annotation TXT
         """
-        xy = [float(s) for s in re.findall(cls.POINT_REGEX, line)]
-        return [[x,y] for x, y in zip(xy[::2], xy[1::2])]
+        xy = [float(s) for s in re.findall(self.POINT_REGEX, line)]
+        if not self.is_TMA:
+            vertices = [[x,y] for x, y in zip(xy[::2], xy[1::2])]
+        else:
+            # if it is TMA, the core has been expanded
+            border = int((1+0.3-self.overlap_threshold)*self.patch_size)
+            vertices = [[x+border,y+border] for x, y in zip(xy[::2], xy[1::2])]
+        return vertices
 
     @classmethod
     def get_path(cls, vertices):
@@ -47,12 +58,23 @@ class GroovyAnnotation(object):
     def count_polygons_area(cls, polygons):
         return sum(map(lambda p: p.area, polygons))
 
-    def __init__(self, annotation_file, overlap_threshold=1.0, logger=None):
+    def __init__(self, annotation_file, overlap_threshold, patch_size, is_TMA, logger=None):
         """
         Parameters
         ----------
         annotation_file : str
             Path to annotation TXT file
+
+        patch_size : int
+            The size of the patch to extract.
+
+        overlap_threshold : float
+
+        is_TMA: bool
+            it is TMA or not
+
+        logger: logger
+            print info
 
         """
         self.slide_name = utils.path_to_filename(annotation_file)
@@ -60,6 +82,8 @@ class GroovyAnnotation(object):
         if logger:
             self.logger = logger
         self.overlap_threshold = overlap_threshold
+        self.patch_size = patch_size
+        self.is_TMA = is_TMA
         if self.overlap_threshold > 1.0:
             raise ValueError("overlap_threshold should be less than 1!")
         self.__set_up()

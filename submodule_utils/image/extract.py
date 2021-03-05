@@ -8,29 +8,37 @@ import submodule_utils.image.preprocess as preprocess
 class SlideCoordsExtractor(collections.abc.Sequence):
     """Iterable that tiles the OpenSlide slide image with adjacent non-overlapping patch tiles of size patch_size. It does not extract tile to a PIL image. It only returns the tile coordinates of the patches.
     """
-    def __init__(self, os_slide, patch_size, shuffle=False, seed=1):
+    def __init__(self, os_slide, patch_size, shuffle=False, seed=1, is_TMA=False):
         """
         Parameters
         ----------
         os_slide : OpenSlide
             OpenSlide slide to get patch coordinates from.
-        
+
         patch_size : int
             The size of the patch to extract.
 
         shuffle : bool
-            Whether to shuffle coordinates to extract. 
-        
+            Whether to shuffle coordinates to extract.
+
         seed : int
             Seed for shuffle.
+
+        is_TMA: bool
+            it is TMA or not
         """
         self.os_slide = os_slide
         self.patch_size = patch_size
-        self.width, self.height = self.os_slide.dimensions
+        self.is_TMA = is_TMA
+        if not self.is_TMA:
+            self.width, self.height = self.os_slide.dimensions
+        else:
+            self.width, self.height = self.os_slide.size
         self.tile_width = int(self.width / self.patch_size)
         self.tile_height = int(self.height / self.patch_size)
         self.shuffle = shuffle
         self.seed = seed
+
         if self.shuffle:
             self.indices = list(range(self.tile_width * self.tile_height))
             random.seed(seed)
@@ -41,7 +49,7 @@ class SlideCoordsExtractor(collections.abc.Sequence):
             return len(self.indices)
         else:
             return self.tile_width * self.tile_height
-    
+
     def __getitem__(self, idx):
         """Get tile coordinate from index.
 
@@ -71,7 +79,7 @@ class SlideCoordsExtractor(collections.abc.Sequence):
 
 
 class SlidePatchExtractor(SlideCoordsExtractor):
-    def __init__(self, os_slide, patch_size, resize_sizes=None, shuffle=False, seed=1):
+    def __init__(self, os_slide, patch_size, resize_sizes=None, shuffle=False, seed=1, is_TMA=False):
         """Iterable that tiles the OpenSlide slide image with adjacent non-overlapping patch tiles of size patch_size, extracts each tile to a PIL image, and then resizes that tile by each resize size in resize_sizes. The patch image, the tile coordinate, and the patch's resized images are returned.
 
         Parameters
@@ -81,7 +89,7 @@ class SlidePatchExtractor(SlideCoordsExtractor):
 
         patch_size : int
             The size of the patch to extract
-        
+
         resize_sizes : (list of int) or None
             A list of multiple sizes to resize. Each size must be at most patch_size.
 
@@ -93,7 +101,7 @@ class SlidePatchExtractor(SlideCoordsExtractor):
              - tile_x, tile_y, x, y (tuple of int) The coordinates returned from SlideCoordsExtractor.
              - resized_patches (dict of int: Image) A dictionary where key is one of patch_size and resize_sizes, and value is patch downsampled to size specified in key.
         """
-        super().__init__(os_slide, patch_size, shuffle=shuffle, seed=seed)
+        super().__init__(os_slide, patch_size, shuffle=shuffle, seed=seed, is_TMA=is_TMA)
         try:
             self.resize_sizes = resize_sizes.copy()
             if patch_size not in self.resize_sizes:
@@ -103,7 +111,7 @@ class SlidePatchExtractor(SlideCoordsExtractor):
 
     def __getitem__(self, idx):
         tile_x, tile_y, x, y = super().__getitem__(idx)
-        patch = preprocess.extract(self.os_slide, x, y, self.patch_size)
+        patch = preprocess.extract(self.os_slide, x, y, self.patch_size, self.is_TMA)
         if self.resize_sizes:
             resized_patches = { }
             for resize_size in self.resize_sizes:

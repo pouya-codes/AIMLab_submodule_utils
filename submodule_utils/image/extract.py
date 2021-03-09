@@ -8,7 +8,7 @@ import submodule_utils.image.preprocess as preprocess
 class SlideCoordsExtractor(collections.abc.Sequence):
     """Iterable that tiles the OpenSlide slide image with adjacent non-overlapping patch tiles of size patch_size. It does not extract tile to a PIL image. It only returns the tile coordinates of the patches.
     """
-    def __init__(self, os_slide, patch_size, shuffle=False, seed=1, is_TMA=False):
+    def __init__(self, os_slide, patch_size, patch_overlap=0.0, shuffle=False, seed=1, is_TMA=False):
         """
         Parameters
         ----------
@@ -17,6 +17,9 @@ class SlideCoordsExtractor(collections.abc.Sequence):
 
         patch_size : int
             The size of the patch to extract.
+
+        patch_overlap: float
+            overlap percentage between two neighbour patches
 
         shuffle : bool
             Whether to shuffle coordinates to extract.
@@ -29,13 +32,20 @@ class SlideCoordsExtractor(collections.abc.Sequence):
         """
         self.os_slide = os_slide
         self.patch_size = patch_size
+        self.patch_overlap = patch_overlap
         self.is_TMA = is_TMA
         if not self.is_TMA:
             self.width, self.height = self.os_slide.dimensions
         else:
             self.width, self.height = self.os_slide.size
-        self.tile_width = int(self.width / self.patch_size)
-        self.tile_height = int(self.height / self.patch_size)
+        # if overlap is 0, the stride is equal to patch size,
+        if self.patch_overlap==0:
+            self.stride = self.patch_size
+        else:
+            self.stride = int((1-self.patch_overlap)*self.patch_size)
+        # number of tiles are calculated based on below (same as CNN)
+        self.tile_width  = int((self.width - self.patch_size)/self.stride + 1)
+        self.tile_height = int((self.height - self.patch_size)/self.stride + 1)
         self.shuffle = shuffle
         self.seed = seed
 
@@ -73,8 +83,8 @@ class SlideCoordsExtractor(collections.abc.Sequence):
             idx = self.indices[idx]
         tile_x = idx % self.tile_width
         tile_y = int(idx / self.tile_width)
-        x = tile_x * self.patch_size
-        y = tile_y * self.patch_size
+        x = tile_x * self.stride
+        y = tile_y * self.stride
         return (tile_x, tile_y, x, y,)
 
 

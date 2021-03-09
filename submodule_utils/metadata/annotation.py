@@ -33,7 +33,7 @@ class GroovyAnnotation(object):
             vertices = [[x,y] for x, y in zip(xy[::2], xy[1::2])]
         else:
             # if it is TMA, the core has been expanded
-            border = int((1+0.3-self.overlap_threshold)*self.patch_size)
+            border = int((1+0.3-self.annotation_overlap)*self.patch_size)
             vertices = [[x+border,y+border] for x, y in zip(xy[::2], xy[1::2])]
         return vertices
 
@@ -58,7 +58,7 @@ class GroovyAnnotation(object):
     def count_polygons_area(cls, polygons):
         return sum(map(lambda p: p.area, polygons))
 
-    def __init__(self, annotation_file, overlap_threshold, patch_size, is_TMA, logger=None):
+    def __init__(self, annotation_file, annotation_overlap, patch_size, is_TMA, logger=None):
         """
         Parameters
         ----------
@@ -68,7 +68,7 @@ class GroovyAnnotation(object):
         patch_size : int
             The size of the patch to extract.
 
-        overlap_threshold : float
+        annotation_overlap : float
 
         is_TMA: bool
             it is TMA or not
@@ -81,11 +81,11 @@ class GroovyAnnotation(object):
         self.annotation_file = annotation_file
         if logger:
             self.logger = logger
-        self.overlap_threshold = overlap_threshold
+        self.annotation_overlap = annotation_overlap
         self.patch_size = patch_size
         self.is_TMA = is_TMA
-        if self.overlap_threshold > 1.0:
-            raise ValueError("overlap_threshold should be less than 1!")
+        if self.annotation_overlap > 1.0:
+            raise ValueError("annotation_overlap should be less than 1!")
         self.__set_up()
 
     def __set_up(self):
@@ -125,7 +125,7 @@ class GroovyAnnotation(object):
     def points_to_label(self, points):
         """Get label of region that contains all the points, or return None if points are not in any region.
         """
-        if self.overlap_threshold==1:
+        if self.annotation_overlap==1:
             for label, paths in self.paths.items():
                 for path in paths:
                     if np.sum(path.contains_points(points)) == 4:
@@ -137,6 +137,6 @@ class GroovyAnnotation(object):
                 for polygon in polygons:
                     intersection = patch.intersection(polygon)
                     percent_area = intersection.area / patch.area
-                    if percent_area >= self.overlap_threshold:
+                    if percent_area >= self.annotation_overlap:
                         return label
         return None

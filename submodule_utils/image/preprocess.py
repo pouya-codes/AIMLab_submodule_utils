@@ -35,7 +35,7 @@ def extract(slide, location_width, location_height, extract_size, is_TMA=False):
 def resize(patch, resize_size):
     return patch.resize((resize_size, resize_size), resample=Image.LANCZOS)
 
-def expand(os_slide, patch_size, overlap_threshold):
+def expand(os_slide, patch_size, annotation_overlap):
     """Function expand the size of TMA cores
 
     Parameters
@@ -44,7 +44,7 @@ def expand(os_slide, patch_size, overlap_threshold):
         A pillow image contains a pillow image
     patch_size : int
         size of extracted patches
-    overlap_threshold: float
+    annotation_overlap: float
         the value of acceptable overlap between patch and label
 
     Returns
@@ -52,8 +52,8 @@ def expand(os_slide, patch_size, overlap_threshold):
         os_slide : PIL Image
             A expanded image
     """
-    # Expand image with border of (1+0.2-overlap_threshold))*patch_size
-    border = int((1+0.3-overlap_threshold)*patch_size)
+    # Expand image with border of (1+0.2-annotation_overlap))*patch_size
+    border = int((1+0.3-annotation_overlap)*patch_size)
     pixel  = os_slide.load()
 
     fill   = np.array([0, 0, 0])

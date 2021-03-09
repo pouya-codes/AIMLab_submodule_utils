@@ -16,7 +16,7 @@ class SlideLevelAccuracy:
         self.verbose = verbose
 
     def calculate_slide_level_accuracy(self):
-        print("Slide Level Results:\n{40 * '*'}")
+        print(f"Slide Level Results:\n{40 * '*'}")
         print(f'All probabilities must be greater than {self.threshold} in order to be considered.\n')
 
         slide_pred_votes_dict = dict()
@@ -24,7 +24,7 @@ class SlideLevelAccuracy:
         for idx, line in enumerate(self.csv_file):
             if idx == 0:
                 continue
-            file_name, predicted_label, real_label, probability = line
+            file_name, predicted_label, real_label, probability,_ = line
             slide_id = self.get_slide_id_from_full_file_name(file_name, self.patch_pattern)
             probability_list = self.get_list_from_probability_string(probability)
             if max(probability_list) > self.threshold:
@@ -52,7 +52,7 @@ class SlideLevelAccuracy:
         if len(self.subtypes_list) == 2:
             slide_auc = roc_auc_score(slide_real_labels, slide_pred_labels, average='macro')
         else:
-            slide_auc = roc_auc_score(slide_real_labels, slide_probs_array, multi_class='ovr', average='macro')
+            slide_auc = roc_auc_score(slide_real_labels, slide_probs_array[:, 1], multi_class='ovr', average='macro')
         self.print_confusion_matrix(conf_matrix, self.subtypes_list)
         self.print_results_summary(self.subtypes_list, acc_per_subtype, weighted_acc, overall_slide_kappa, overall_slide_f1,
                               slide_auc)

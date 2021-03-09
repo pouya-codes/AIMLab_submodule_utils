@@ -16,7 +16,7 @@ class SlideLevelAccuracy:
         self.verbose = verbose
 
     def calculate_slide_level_accuracy(self):
-        print("Slide Level Results:\n{40 * '*'}")
+        print(f"Slide Level Results:\n{40 * '*'}")
         print(f'All probabilities must be greater than {self.threshold} in order to be considered.\n')
 
         slide_pred_votes_dict = dict()

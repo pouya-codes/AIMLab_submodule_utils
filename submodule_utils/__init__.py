@@ -926,3 +926,51 @@ def filter_patches_based_slides(patch_location, pattern, slide_idx, n_process):
     for slide in slides:
         paths.extend(glob.glob(f"{slide}{add}/*.png"))
     return paths
+
+# Source: https://stackoverflow.com/questions/1883980/find-the-nth-occurrence-of-substring-in-a-string
+def find_nth(haystack, needle, n):
+    start = haystack.find(needle)
+    while start >= 0 and n > 1:
+        start = haystack.find(needle, start+len(needle))
+        n -= 1
+    return start
+
+##########
+# Amirali
+def get_subtype_paths(filter, patch_pattern, patch_path_wildcard):
+
+    """Function to filter the path for the selected subtype
+
+    Parameters
+    ----------
+    filter : string with this format [subtype1, subtype2]
+
+    patch_pattern : dict
+
+    patch_path_wildcard: string
+        path of the patches without subtype filtering
+
+    Returns
+    -------
+    patch_path_wildcard : array of string
+    """
+
+    filter = filter.replace("[","")
+    filter = filter.replace("]","")
+    filter = filter.replace(" ","")
+    filter = filter.split(',')
+
+    num_part = max(patch_pattern.values())+1
+    num_slash = patch_path_wildcard.count('/')
+
+    n = patch_pattern['subtype']
+
+    idx_1 = find_nth(patch_path_wildcard, '/', num_slash-num_part+n)
+    idx_2 = find_nth(patch_path_wildcard, '/', num_slash-num_part+n+1)
+
+    new_patch_path_wildcards =[]
+    for subtype in filter:
+        new_patch_path_wildcard = patch_path_wildcard[:idx_1+1] +  subtype\
+                                + patch_path_wildcard[idx_2:]
+        new_patch_path_wildcards.append(new_patch_path_wildcard)
+    return new_patch_path_wildcards

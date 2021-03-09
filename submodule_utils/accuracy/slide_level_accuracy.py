@@ -24,7 +24,7 @@ class SlideLevelAccuracy:
         for idx, line in enumerate(self.csv_file):
             if idx == 0:
                 continue
-            file_name, predicted_label, real_label, probability = line
+            file_name, predicted_label, real_label, probability,_ = line
             slide_id = self.get_slide_id_from_full_file_name(file_name, self.patch_pattern)
             probability_list = self.get_list_from_probability_string(probability)
             if max(probability_list) > self.threshold:

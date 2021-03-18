@@ -974,3 +974,25 @@ def get_subtype_paths(filter, patch_pattern, patch_path_wildcard):
                                 + patch_path_wildcard[idx_2:]
         new_patch_path_wildcards.append(new_patch_path_wildcard)
     return new_patch_path_wildcards
+
+#########
+# Amirali
+def find_value_from_name_enum(label, CategoryEnum):
+    """Function to find the value based on label's name in enum
+
+    Parameters
+    ----------
+    label : string
+
+    CategoryEnum : enum
+
+    Returns
+    -------
+    index : int
+    """
+    index = -1
+    for category in CategoryEnum:
+        if category.name.upper()==label.upper():
+            index = category.value
+            return index
+    raise ValueError(f"{label} is not in Enum!")

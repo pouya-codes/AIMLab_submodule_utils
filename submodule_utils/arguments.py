@@ -65,7 +65,7 @@ def str_kv(kv):
     ----------
     kv: str
         a key=value argument
-    
+
     Returns
     -------
     tuple
@@ -85,7 +85,7 @@ def int_kv(kv):
     ----------
     kv: str
         a key=value argument
-    
+
     Returns
     -------
     tuple
@@ -103,14 +103,14 @@ def int_kv(kv):
 
 def subtype_kv(kv):
     """Used to identify and convert key=value arguments into a tuple (key.upper(), int(value)).
-    For example: MMRd=0 becomes (MMRD, int(0)) 
+    For example: MMRd=0 becomes (MMRD, int(0))
     This is to be passed as the type when calling argparse.ArgumentParser.add_argument()
 
     Parameters
     ----------
     kv: str
         a key=value argument
-    
+
     Returns
     -------
     tuple
@@ -147,7 +147,7 @@ class ParseKVToDictAction(argparse.Action):
         setattr(namespace, option_string.lstrip('-'), make_dict(values))
 
 class CustomHelpFormatter(
-        argparse.RawTextHelpFormatter, 
+        argparse.RawTextHelpFormatter,
         argparse.ArgumentDefaultsHelpFormatter):
     """
     TODO: trying to make help string look better

@@ -519,7 +519,7 @@ def get_magnification_by_patch_id(patch_id, patch_pattern):
     return int(patch_id.split('/')[patch_pattern['magnification']])
 
 
-def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
+def get_patient_by_slide_id(slide_id, dataset_origin=['ovcare']):
     """
     Parameters
     ----------
@@ -529,7 +529,7 @@ def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
         For TCGA the slide ID is TCGA-A5-A0GH-01Z-00-DX1.22005F4A-0E77-4FCB-B57A-9944866263AE
             and the patient ID is TCGA-A5-A0GH
 
-    dataset_origin : str
+    dataset_origin : list of str
         The dataset origin that determines the regex for the patient ID
 
     Returns
@@ -537,18 +537,38 @@ def get_patient_by_slide_id(slide_id, dataset_origin='ovcare'):
     str
         The patient ID from the slide ID
     """
-    match = re.search(get_patient_regex(dataset_origin), slide_id)
-    if match:
-        if dataset_origin == "other":
-            return match.group(0)
-        return match.group(1)
-    else:
+    # First Implementation for covering multiple origin
+    # for origin in dataset_origin:
+    #     match = re.search(get_patient_regex(origin), slide_id)
+    #     if match:
+    #         if origin == "other":
+    #             return match.group(0)
+    #         return match.group(1)
+    # raise NotImplementedError(
+    #     '{} is not detected by get_patient_regex(dataset_origins)'.format(slide_id))
+
+    # Second Implementation for covering multiple origin
+    # Make sure that multiple origin does not match one slide
+    matches = []
+    for origin in dataset_origin:
+        match = re.search(get_patient_regex(origin), slide_id)
+        matches.append(match)
+    not_none = [match for match in matches if match is not None]
+    num_not_none = len(not_none)
+    if num_not_none > 1:
+        raise ValueError(f"{slide_id} is detected by more than one origin!")
+    elif num_not_none==0:
         raise NotImplementedError(
             '{} is not detected by get_patient_regex(dataset_origins)'.format(slide_id))
+    else:
+        match = not_none[0]
+        if origin == "other":
+            return match.group(0)
+        return match.group(1)
 
 
 def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, CategoryEnum,
-                                            is_binary=False, dataset_origin='ovcare'):
+                                            is_binary=False, dataset_origin=['ovcare']):
     """Creates a dict locator for patch paths like so {subtype: {patient: {slide_id: [patch_path]}}
 
     Parameters
@@ -565,7 +585,7 @@ def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, Category
     is_binary : bool
         Whether we want to categorize patches by the Tumor/Normal category (true) or by the subtype category (false)
 
-    dataset_origin : str
+    dataset_origin : list of str
         The origins of the slide dataset the patches are generated from. One of DATASET_ORIGINS
 
     Returns

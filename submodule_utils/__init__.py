@@ -35,8 +35,8 @@ from submodule_utils.subtype_enum import BinaryEnum
 
 DEAFULT_SEED = 256
 DATASET_TO_PATIENT_REGEX = {
-    'ovcare': re.compile(r"^[A-Z]*-?(\d*).*\(?.*\)?.*$"), # Use this one only for TMA cores
-    # 'ovcare': re.compile(r"^[A-Z]*-?(\d.*\d).*\(?.*\)?.*$"), # For cases such as VOA-17017YW025A # Use this one only for TMA cores
+    'ovcare': re.compile(r"^[A-Z]+-?(\d*).*\(?.*\)?.*$"),
+    # 'ovcare': re.compile(r"^[A-Z]+-?(\d.*\d).*\(?.*\)?.*$"), # For cases such as VOA-17017YW025A # Use this one only for TMA cores
     'tcga': re.compile(r"^(TCGA-\w+-\w+)-"),
     'other': re.compile(r".*")
 }

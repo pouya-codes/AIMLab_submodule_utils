@@ -22,7 +22,7 @@ class SlideLevelAccuracy:
         slide_pred_votes_dict = dict()
         slide_real_labels_dict = dict()
         for idx, line in enumerate(self.csv_file):
-            if idx > starting_line:
+            if idx < starting_line:
                 continue
             file_name, predicted_label, real_label, probability,_ = line
             slide_id = self.get_slide_id_from_full_file_name(file_name, self.patch_pattern)

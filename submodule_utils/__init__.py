@@ -1016,3 +1016,23 @@ def find_value_from_name_enum(label, CategoryEnum):
             index = category.value
             return index
     raise ValueError(f"{label} is not in Enum!")
+
+# https://stackoverflow.com/questions/20348717/algo-for-dividing-a-number-into-almost-equal-whole-numbers
+def divide_equal_parts(num, div):
+    return [num // div + (1 if x < num % div else 0) for x in range (div)]
+
+def find_steps(origin_count, n_group):
+    steps = {}
+    for origin, count in origin_count.items():
+        steps[origin] = divide_equal_parts(count, n_group)
+    return steps
+
+def get_origin(slide_id, dataset_origin):
+    if len(dataset_origin)==1:
+        return dataset_origin[0]
+    for origin in dataset_origin:
+        match = re.search(get_patient_regex(origin), slide_id)
+        if match is None:
+            continue
+        else:
+            return origin

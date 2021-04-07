@@ -48,11 +48,14 @@ class SlideLevelAccuracy:
         weighted_acc = self.get_slide_level_accuracy(slide_real_labels, slide_pred_labels)
         overall_slide_kappa = cohen_kappa_score(slide_real_labels, slide_pred_labels)
         overall_slide_f1 = f1_score(slide_real_labels, slide_pred_labels, average='macro')
-
-        if len(self.subtypes_list) == 2:
-            slide_auc = roc_auc_score(slide_real_labels, slide_pred_labels[:, 1], average='macro')
-        else:
-            slide_auc = roc_auc_score(slide_real_labels, slide_probs_array, multi_class='ovr', average='macro')
+        slide_auc=0
+        try:
+            if len(self.subtypes_list) == 2:
+                slide_auc = roc_auc_score(slide_real_labels, slide_pred_labels[:, 1], average='macro')
+            else:
+                slide_auc = roc_auc_score(slide_real_labels, slide_probs_array, multi_class='ovr', average='macro')
+        except:
+            pass
         self.print_confusion_matrix(conf_matrix, self.subtypes_list)
         self.print_results_summary(self.subtypes_list, acc_per_subtype, weighted_acc, overall_slide_kappa, overall_slide_f1,
                               slide_auc)

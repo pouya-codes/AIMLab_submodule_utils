@@ -38,6 +38,11 @@ def output_file_path(s):
     except:
         raise argparse.ArgumentTypeError(f"readable_file:{s} is not a valid path")
 
+def positive_int(i):
+    i = int(i)
+    if i <= 0:
+        raise argparse.ArgumentTypeError(f"{i} is an invalid positive int value")
+    return i
 
 def dataset_origin(s):
     if s.lower() in DATASET_ORIGINS:

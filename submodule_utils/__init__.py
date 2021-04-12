@@ -917,6 +917,18 @@ def filter_path(path_list, pattern, filter, slide_idx, n_process):
 
 ##########
 # Amirali
+def select_slides(slide_path, slide_idx, n_process):
+    num   = slide_idx
+    start = (num-1)*n_process
+    end   = num*n_process if num*n_process<len(slide_path) else len(slide_path)
+    if start >= len(slide_path):
+        raise ValueError(f"Total number of slides are {len(slide_path)}"
+                         f" and by using {n_process} CPUs, you are assuming "
+                         f"for at least {start+1} slides! --> decrease slide_idx={num}")
+    return slide_path[start:end]
+
+##########
+# Amirali
 def filter_patches_based_slides(patch_location, pattern, slide_idx, n_process):
     ''' Function to filter get all the patches from specifc slides'''
 
@@ -932,15 +944,7 @@ def filter_patches_based_slides(patch_location, pattern, slide_idx, n_process):
 
     slides.sort()
 
-    num   = slide_idx
-    start = (num-1)*n_process
-    end   = num*n_process if num*n_process<len(slides) else len(slides)
-    if start > len(slides) or start < 0:
-        raise ValueError(f"Total number of slides in this subtype is {len(slides)}"
-                         f" and by using {n_process} CPUs, but you are assuming "
-                         f"for at least {start} slides! --> decrease (increase) {num}")
-
-    slides = slides[start:end]
+    slides = select_slides(slides, slide_idx, n_process)
     paths = []
     add = (max(pattern.values())-pattern['slide'])*'/*'
     for slide in slides:

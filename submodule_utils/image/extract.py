@@ -8,7 +8,8 @@ import submodule_utils.image.preprocess as preprocess
 class SlideCoordsExtractor(collections.abc.Sequence):
     """Iterable that tiles the OpenSlide slide image with adjacent non-overlapping patch tiles of size patch_size. It does not extract tile to a PIL image. It only returns the tile coordinates of the patches.
     """
-    def __init__(self, os_slide, patch_size, patch_overlap=0.0, shuffle=False, seed=1, is_TMA=False):
+    def __init__(self, os_slide, patch_size, patch_overlap=0.0, shuffle=False,
+                 seed=1, is_TMA=False, stride=None):
         """
         Parameters
         ----------
@@ -28,7 +29,10 @@ class SlideCoordsExtractor(collections.abc.Sequence):
             Seed for shuffle.
 
         is_TMA: bool
-            it is TMA or not
+            Whether it is TMA or not
+
+        stride: int
+            Space between two extracted patches
         """
         self.os_slide = os_slide
         self.patch_size = patch_size
@@ -39,8 +43,9 @@ class SlideCoordsExtractor(collections.abc.Sequence):
         else:
             self.width, self.height = self.os_slide.size
         # if overlap is 0, the stride is equal to patch size,
+        # if stride is defined, add it to patch_size (for using in entire_slide)
         if self.patch_overlap==0:
-            self.stride = self.patch_size
+            self.stride = self.patch_size if stride is None else self.patch_size+stride
         else:
             self.stride = int((1-self.patch_overlap)*self.patch_size)
         # number of tiles are calculated based on below (same as CNN)

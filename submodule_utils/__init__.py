@@ -1,3 +1,5 @@
+# master branch
+##################
 # Built-in libraries
 import re
 import enum
@@ -915,9 +917,26 @@ def filter_path(path_list, pattern, filter, slide_idx, n_process):
         raise ValueError(f"No slide is selected!")
     return paths
 
-##########
-# Amirali
 def select_slides(slide_path, slide_idx, n_process):
+    """
+    Function to select a number of slides based on idx (slide_idx) and n_CPUs
+    (n_process) in a way that idx should be less than n_slides / n_CPUs.
+
+    Parameters
+    ----------
+    slide_path : array of str
+        array of paths to slides [path/to/slide, ....]
+    slide_idx : int
+        index of the portion of slides we like to select. In each idx, we select,
+        at most n_process slides.
+    n_process: int
+        number of CPUs for multiprocessing
+
+    Returns
+    -------
+    slide_path: array of str
+        array of paths to the selected slides
+    """
     num   = slide_idx
     start = (num-1)*n_process
     end   = num*n_process if num*n_process<len(slide_path) else len(slide_path)

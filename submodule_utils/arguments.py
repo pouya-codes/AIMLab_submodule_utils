@@ -44,6 +44,12 @@ def positive_int(i):
         raise argparse.ArgumentTypeError(f"{i} is an invalid positive int value")
     return i
 
+def float_less_one(f):
+    f = float(f)
+    if f < 0.0 or f > 1.0:
+        raise argparse.ArgumentTypeError(f"{f} should be in range 0 <= f <= 1")
+    return f
+
 def dataset_origin(s):
     if s.lower() in DATASET_ORIGINS:
         return s.lower()

@@ -1060,3 +1060,33 @@ def get_origin(slide_id, dataset_origin):
             continue
         else:
             return origin
+
+def save_hdf5(output_path, paths, patch_size, mode='w'):
+    hf = h5py.File(output_path, mode)
+    dset1 = hf.create_dataset('paths', data=paths)
+    hf.attrs['patch_size'] = patch_size
+    hf.close()
+
+def open_hd5_file(hd5_path):
+    """Extract data from a hd5 file.
+
+    Parameters
+    ----------
+    hd5_path : str
+        Path to the hd5 file.
+
+    Returns
+    -------
+
+    A list of
+        - paths (array)
+        - patch_size (int)
+    """
+    coordinates = []
+    with h5py.File(hd5_path, "r") as f:
+        paths = [path.decode("utf-8") for path in list(f['paths'])]
+        patch_size = f.attrs['patch_size']
+    return paths, patch_size
+
+def get_magnification_by_patch_path(path):
+    return os.path.basename(os.path.dirname(os.path.dirname(path)))

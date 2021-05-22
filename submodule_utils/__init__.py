@@ -1082,11 +1082,10 @@ def open_hd5_file(hd5_path):
         - paths (array)
         - patch_size (int)
     """
-    coordinates = []
     with h5py.File(hd5_path, "r") as f:
         paths = [path.decode("utf-8") for path in list(f['paths'])]
         patch_size = f.attrs['patch_size']
     return paths, patch_size
 
-def get_magnification_by_patch_path(path):
+def get_patchsize_by_patch_path(path):
     return os.path.basename(os.path.dirname(os.path.dirname(path)))

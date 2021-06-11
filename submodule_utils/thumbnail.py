@@ -45,8 +45,13 @@ class PlotThumbnail(object):
                 else: color=(192,192,192) # Silver
                 for polygon in polygons:
                     int_coords = lambda x: (np.array(x)/self.down_sample).round().astype(np.int32)
-                    exterior = [int_coords(polygon.exterior.coords)]
-                    cv2.fillPoly(overlay, exterior, color=color)
+                    if polygon.type=='Polygon':
+                        exterior = [int_coords(polygon.exterior.coords)]
+                        cv2.fillPoly(overlay, exterior, color=color)
+                    else:
+                        for polygon_ in polygon:
+                            exterior = [int_coords(polygon_.exterior.coords)]
+                            cv2.fillPoly(overlay, exterior, color=color)
             cv2.addWeighted(overlay, alpha, self.thumbnail, 1 - alpha, 0, self.thumbnail)
 
     def draw_patches(self):

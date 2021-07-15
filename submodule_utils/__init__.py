@@ -33,7 +33,7 @@ import numpy as np
 # import copy
 
 # Modules
-from submodule_utils.subtype_enum import BinaryEnum
+# from submodule_utils.subtype_enum import BinaryEnum
 
 DEAFULT_SEED = 256
 DATASET_TO_PATIENT_REGEX = {
@@ -457,6 +457,22 @@ def get_slide_by_patch_id(patch_id, patch_pattern):
     slide_id = patch_id.split('/')[patch_pattern['slide']]
     return slide_id
 
+
+def get_patch_tile_by_patch_id(patch_id, patch_size):
+    """Function to obtain patch coordinate from patch id
+
+    Parameters
+    ----------
+    patch_size : int
+    patch_id : str
+
+    Returns
+    -------
+    list of int
+        patch coordinates id extracted from `patch_id`
+    """
+    patch_coordinate = [int(c)//patch_size for c in patch_id.split('/')[-1].split('_')]
+    return patch_coordinate
 
 def get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum, is_binary=False):
     """Get category label from patch id. The label can be either 'annotation' or 'subtype' based on is_binary flag.

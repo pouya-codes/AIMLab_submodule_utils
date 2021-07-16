@@ -33,7 +33,7 @@ import numpy as np
 # import copy
 
 # Modules
-# from submodule_utils.subtype_enum import BinaryEnum
+from submodule_utils.subtype_enum import BinaryEnum
 
 DEAFULT_SEED = 256
 DATASET_TO_PATIENT_REGEX = {

@@ -51,7 +51,7 @@ class SlideLevelAccuracy:
         slide_auc=0
         try:
             if len(self.subtypes_list) == 2:
-                slide_auc = roc_auc_score(slide_real_labels, slide_pred_labels, average='macro')
+                slide_auc = roc_auc_score(slide_real_labels, slide_probs_array[:, 1], average='macro')
             else:
                 slide_auc = roc_auc_score(slide_real_labels, slide_probs_array, multi_class='ovr', average='macro')
         except:

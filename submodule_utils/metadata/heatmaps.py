@@ -1,5 +1,5 @@
 import h5py, csv, glob
-from submodule_utils.submodule_utils import *
+from submodule_utils import *
 from openslide import OpenSlide
 
 def get_list_from_probability_string(orig_string):

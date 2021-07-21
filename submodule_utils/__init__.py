@@ -9,6 +9,7 @@ import json
 import itertools
 import glob
 from pathlib import Path
+import csv
 
 # External Libraries
 import h5py
@@ -1105,3 +1106,53 @@ def open_hd5_file(hd5_path):
 
 def get_patchsize_by_patch_path(path):
     return os.path.basename(os.path.dirname(os.path.dirname(path)))
+
+def read_manifest(manifest_location):
+    with open(manifest_location) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter = ',')
+        column_names = []
+        column_names.extend(next(csv_reader))
+        if 'slide' not in column_names:
+            raise ValueError('slide must be one of the columns!')
+        for name in column_names:
+            if name not in ['slide', 'annotation', 'subtype']:
+                raise ValueError(f'{name} is not acceptable for column name!')
+        ###################
+        # if pass, save the informations
+        dict = {name:[] for name in column_names}
+        for row in csv_reader:
+            for name, info in zip(column_names, row):
+                dict[name].append(info)
+    return dict
+
+def get_paths_manifest(manifest_location, column='slide', extensions=['png']):
+    """Get paths from manifest file
+
+    Parameters
+    ----------
+    manifest_location : str
+        The manifest location
+
+    column : str
+        Which column to look at.
+
+    extensions : list of str
+        List of file extensions to search for
+
+    Returns
+    -------
+    list of str
+        List of slide paths
+    """
+    paths = []
+    for extension in extensions:
+        path_wildcard = rootpath
+        if pattern is None:
+            path_wildcard = os.path.join(path_wildcard, '**', '*.' + extension)
+            paths.extend(glob.glob(path_wildcard, recursive=True))
+        else:
+            for i in range(len(pattern)):
+                path_wildcard = os.path.join(path_wildcard, '**')
+            path_wildcard = os.path.join(path_wildcard, '*.' + extension)
+            paths.extend(glob.glob(path_wildcard))
+    return paths

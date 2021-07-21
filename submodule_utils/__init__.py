@@ -1124,35 +1124,3 @@ def read_manifest(manifest_location):
             for name, info in zip(column_names, row):
                 dict[name].append(info)
     return dict
-
-def get_paths_manifest(manifest_location, column='slide', extensions=['png']):
-    """Get paths from manifest file
-
-    Parameters
-    ----------
-    manifest_location : str
-        The manifest location
-
-    column : str
-        Which column to look at.
-
-    extensions : list of str
-        List of file extensions to search for
-
-    Returns
-    -------
-    list of str
-        List of slide paths
-    """
-    paths = []
-    for extension in extensions:
-        path_wildcard = rootpath
-        if pattern is None:
-            path_wildcard = os.path.join(path_wildcard, '**', '*.' + extension)
-            paths.extend(glob.glob(path_wildcard, recursive=True))
-        else:
-            for i in range(len(pattern)):
-                path_wildcard = os.path.join(path_wildcard, '**')
-            path_wildcard = os.path.join(path_wildcard, '*.' + extension)
-            paths.extend(glob.glob(path_wildcard))
-    return paths

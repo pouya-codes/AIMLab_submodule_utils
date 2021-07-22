@@ -53,7 +53,7 @@ def generate_heatmaps(csv_path, patch_pattern, CategoryEnum, slides_path, heatma
                                 'data': []}
 
     for key, value in slides.items():
-        heatmap_filepath = os.path.join(heatmap_location, f'heatmap.{key}.h5')
+        heatmap_filepath = os.path.join(heatmap_location, f'heatmap.0.{key}.h5')
         hdf = h5py.File(heatmap_filepath, 'w')
         try:
             slide_path = glob.glob(f"{os.path.join(slides_path, key)}.*")[0]

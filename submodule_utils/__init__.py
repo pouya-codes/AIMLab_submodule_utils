@@ -37,8 +37,10 @@ import numpy as np
 from submodule_utils.subtype_enum import BinaryEnum
 
 DEAFULT_SEED = 256
+# TODO fix this regex!
+# other and ovcare will be same!
 DATASET_TO_PATIENT_REGEX = {
-    'ovcare': re.compile(r"^(?!TCGA)[A-Z]+-?(\d*).*\(?.*\)?.*$"), # CHeck not starts with TCGA
+    'ovcare': re.compile(r"^(?!TCGA|German)[A-Z]+-?(\d*).*\(?.*\)?.*$"), # CHeck not starts with TCGA
     # 'ovcare': re.compile(r"^(?!TCGA)[A-Z]+-?(\d.*\d).*\(?.*\)?.*$"), # For cases such as VOA-17017YW025A # Use this one only for TMA cores
     'tcga': re.compile(r"^(TCGA-\w+-\w+)-"),
     'german': re.compile(r"German-?(\d*).*\(?.*\)?.*$"),

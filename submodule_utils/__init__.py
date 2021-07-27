@@ -591,7 +591,10 @@ def get_patient_by_slide_id(slide_id, dataset_origin=['ovcare']):
 
 def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, CategoryEnum,
                                             is_binary=False, dataset_origin=['ovcare']):
-    """Creates a dict locator for patch paths like so {subtype: {patient: {slide_id: [patch_path]}}
+    """Creates a dict locator for patch paths like so {subtype: {origin_patient: {slide_id: [patch_path]}}
+
+    The reason for saving origin_patient instead of only patient is that if two cohorts are added,
+    and they have same patient, they do not mix such as VOA-19 and German-19.
 
     Parameters
     ----------
@@ -613,7 +616,7 @@ def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, Category
     Returns
     -------
     subtype_patient_slide_patch : dict
-        {subtype: {patient: {slide_id: [patch_path]}}
+        {subtype: {origin_patient: {slide_id: [patch_path]}}
 
     """
     subtype_patient_slide_patch = {}
@@ -625,6 +628,8 @@ def create_subtype_patient_slide_patch_dict(patch_paths, patch_pattern, Category
             subtype_patient_slide_patch[patch_subtype] = {}
         slide_id = get_slide_by_patch_id(patch_id, patch_pattern)
         patient_id = get_patient_by_slide_id(slide_id, dataset_origin=dataset_origin)
+        origin = get_origin(slide_id, dataset_origin=dataset_origin)
+        patient_id = f"{origin.lower()}__{patient_id}"
         if patient_id not in subtype_patient_slide_patch[patch_subtype]:
             subtype_patient_slide_patch[patch_subtype][patient_id] = {}
         if slide_id not in subtype_patient_slide_patch[patch_subtype][patient_id]:
@@ -1114,10 +1119,8 @@ def read_manifest(manifest_location):
         csv_reader = csv.reader(csv_file, delimiter = ',')
         column_names = []
         column_names.extend(next(csv_reader))
-        if 'slide' not in column_names:
-            raise ValueError('slide must be one of the columns!')
         for name in column_names:
-            if name not in ['slide', 'annotation', 'subtype']:
+            if name not in ['origin', 'patient_id', 'slide_id', 'slide_path', 'annotation_path', 'subtype']:
                 raise ValueError(f'{name} is not acceptable for column name!')
         ###################
         # if pass, save the informations
@@ -1126,3 +1129,54 @@ def read_manifest(manifest_location):
             for name, info in zip(column_names, row):
                 dict[name].append(info)
     return dict
+
+
+def create_subtype_patient_slide_patch_dict_manifest(patch_paths, patch_pattern, CategoryEnum,
+                                            manifest, is_binary=False):
+    """Creates a dict locator for patch paths from manifest file
+    like so {subtype: {origin_patient: {slide_id: [patch_path]}}
+
+    The reason for saving origin_patient instead of only patient is that if two cohorts are added,
+    and they have same patient, they do not mix such as VOA-19 and German-19.
+
+    Parameters
+    ----------
+    patch_paths : list
+        List of absolute patch paths
+
+    patch_pattern : dict
+        Dictionary describing the directory structure of the patch paths. The words can be 'annotation', 'subtype', 'slide', 'patch_size', 'magnification'
+
+    CategoryEnum : enum.Enum
+        The enum representing the categories and is one of (SubtypeEnum, BinaryEnum)
+
+    is_binary : bool
+        Whether we want to categorize patches by the Tumor/Normal category (true) or by the subtype category (false)
+
+    manifest : dict
+        dict with min of 4 columns and max of 6 columns
+
+    Returns
+    -------
+    subtype_patient_slide_patch : dict
+        {subtype: {origin_patient: {slide_id: [patch_path]}}
+
+    """
+    subtype_patient_slide_patch = {}
+    for patch_path in patch_paths:
+        patch_id = create_patch_id(patch_path, patch_pattern)
+        patch_subtype = get_label_by_patch_id(patch_id, patch_pattern, CategoryEnum,
+                                              is_binary=is_binary).name
+        if patch_subtype not in subtype_patient_slide_patch:
+            subtype_patient_slide_patch[patch_subtype] = {}
+        slide_id = get_slide_by_patch_id(patch_id, patch_pattern)
+        idx = manifest['slide_id'].index(slide_id)
+        patient_id = manifest['patient_id'][idx]
+        origin = manifest['origin'][idx]
+        patient_id = f"{origin.lower()}__{patient_id}"
+        if patient_id not in subtype_patient_slide_patch[patch_subtype]:
+            subtype_patient_slide_patch[patch_subtype][patient_id] = {}
+        if slide_id not in subtype_patient_slide_patch[patch_subtype][patient_id]:
+            subtype_patient_slide_patch[patch_subtype][patient_id][slide_id] = []
+        subtype_patient_slide_patch[patch_subtype][patient_id][slide_id] += [patch_path]
+    return subtype_patient_slide_patch

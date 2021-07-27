@@ -46,7 +46,7 @@ def generate_heatmaps(csv_path, patch_pattern, CategoryEnum, slides_path, heatma
         tile_y, tile_x = get_patch_tile_by_patch_id(patch_id, patch_size)
         probabilities = get_list_from_probability_string(probability)
         if slide_id in slides:
-            slides[slide_id]['data'].append([tile_y, tile_x, probabilities])
+            slides[slide_id]['data'].append([tile_x, tile_y, probabilities])
         else:
             slides[slide_id] = {'meta': {'magnification': get_magnification_by_patch_id(patch_id, patch_pattern),
                                          'patch_size': patch_size},

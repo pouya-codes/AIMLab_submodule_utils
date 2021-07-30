@@ -1120,7 +1120,7 @@ def read_manifest(manifest_location):
         column_names = []
         column_names.extend(next(csv_reader))
         for name in column_names:
-            if name not in ['origin', 'patient_id', 'slide_id', 'slide_path', 'annotation_path', 'subtype']:
+            if name not in ['origin', 'patient_id', 'slide_id', 'slide_path', 'annotation_path', 'mask_path', 'subtype']:
                 raise ValueError(f'{name} is not acceptable for column name!')
         ###################
         # if pass, save the informations
@@ -1220,3 +1220,9 @@ def get_circular_coordinates(radius, x, y, stride, size, patch_size):
                 continue
             Coords.append((new_x_, new_y_))
     return Coords
+
+def find_slide_path(paths, slide_name):
+    for path in paths:
+        if path_to_filename(path) == slide_name:
+            return path
+    return None

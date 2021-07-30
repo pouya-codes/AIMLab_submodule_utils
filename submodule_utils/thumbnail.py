@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 class PlotThumbnail(object):
-    def __init__(self, slide_name, os_slide, hd5_file_path, annotation=None):
+    def __init__(self, slide_name, os_slide, hd5_file_path, annotation=None, mask=None):
         """
         Parameters
         ----------
@@ -20,6 +20,7 @@ class PlotThumbnail(object):
         self.os_slide = os_slide
         self.hd5_file_path = hd5_file_path
         self.annotation = annotation
+        self.mask = mask
         self.slide_name = slide_name
         self.store_path = os.path.join(os.path.dirname(self.hd5_file_path),
                                        'Thumbnails')
@@ -54,6 +55,19 @@ class PlotThumbnail(object):
                             cv2.fillPoly(overlay, exterior, color=color)
             cv2.addWeighted(overlay, alpha, self.thumbnail, 1 - alpha, 0, self.thumbnail)
 
+    def draw_mask(self):
+        if self.mask is not None:
+            overlay = self.thumbnail.copy()
+            poly = self.mask.polygons
+            alpha = 0.3 # that's the transparency factor
+            for polygons in poly.values():
+                color=(100, 100, 100)
+                for polygon in polygons:
+                    int_coords = lambda x: (np.array(x)/self.down_sample).round().astype(np.int32)
+                    exterior = [int_coords(polygon.exterior.coords)]
+                    cv2.fillPoly(overlay, exterior, color=color)
+            cv2.addWeighted(overlay, alpha, self.thumbnail, 1 - alpha, 0, self.thumbnail)
+
     def draw_patches(self):
         paths, patch_size = utils.open_hd5_file(self.hd5_file_path)
         for path in paths:
@@ -74,5 +88,6 @@ class PlotThumbnail(object):
         os.makedirs(self.store_path, exist_ok=True)
         self.get_thumbnail()
         self.draw_annotation()
+        self.draw_mask()
         self.draw_patches()
         self.save_thumbnail()

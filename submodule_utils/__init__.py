@@ -1180,3 +1180,43 @@ def create_subtype_patient_slide_patch_dict_manifest(patch_paths, patch_pattern,
             subtype_patient_slide_patch[patch_subtype][patient_id][slide_id] = []
         subtype_patient_slide_patch[patch_subtype][patient_id][slide_id] += [patch_path]
     return subtype_patient_slide_patch
+
+def get_circular_coordinates(radius, x, y, stride, size, patch_size):
+    """ Getting all the Xs and Ys that are located in a circle with center of (x, y)
+    and radius
+    Modified from: https://stackoverflow.com/questions/39862709/generate-coordinates-in-grid-that-lie-within-a-circle/42375645
+    Parameters
+    ----------
+    radius : int
+
+    x : int
+        coordinate
+
+    y : int
+        coordinate
+
+    stride: int
+
+    size: tuple
+        dimention of slide
+
+    patch_size: int
+
+    Returns
+    -------
+    Coords : list of tuples
+    """
+    width, height = size
+    Coords = []
+
+    for x_ in range(-radius, radius+1):
+        new_x_ = x_ * stride + x
+        if new_x_ < 0 or new_x_ > width - patch_size: # check if it will be outside of the possible range
+            continue
+        Y = int((radius*radius - x_*x_)**0.5)
+        for y_ in range(-Y, Y+1):
+            new_y_ = y_ * stride + y
+            if new_y_ < 0 or new_y_ > height - patch_size:
+                continue
+            Coords.append((new_x_, new_y_))
+    return Coords

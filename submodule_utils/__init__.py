@@ -349,7 +349,7 @@ def create_patch_pattern(patch_pattern):
     dict
         Empty dict if patch pattern is '', otherwise each word becomes a dict key with int ID giving position of the key in patch pattern.
     '''
-    if patch_pattern == '':
+    if patch_pattern == '' or patch_pattern == "'":
         return {}
     else:
         if type(patch_pattern) is str:

@@ -118,10 +118,14 @@ class TissueMask(object):
         """
         # Check the ratio of overlapping area
         patch = shapely.geometry.Polygon(points)
+        area_ = 0
         for label, polygons in self.polygons.items():
             for polygon in polygons:
                 intersection = patch.intersection(polygon)
                 percent_area = intersection.area / patch.area
                 if percent_area >= self.mask_overlap:
                     return label
+                if area_ >= self.mask_overlap: # if total of overlaps reach that criteria
+                    return label
+                area_ += percent_area
         return None

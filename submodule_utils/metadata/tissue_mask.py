@@ -102,7 +102,7 @@ class TissueMask(object):
                 else:
                     polygon = polygon.union(poly)
             if polygon.type=='Polygon':
-                self.polygons['clear_area'] = polygon
+                self.polygons['clear_area'] = [polygon]
             else:
                 self.polygons['clear_area'] = list(polygon)
         else:

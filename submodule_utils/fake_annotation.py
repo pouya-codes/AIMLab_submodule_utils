@@ -76,13 +76,17 @@ class FakeAnnotation(object):
     def save_to_txt_file(self):
         file = open(self.annotation_file, "w")
         label = 'Tumor'
-        for poly in self.multi_poly.geoms:
+        if self.multi_poly.type=='Polygon':
+            self.multi_poly = [self.multi_poly]
+        else:
+            self.multi_poly = list(self.multi_poly)
+        for poly in self.multi_poly:
             line = ''
             line += label
             line += ' ['
             x, y = poly.exterior.coords.xy
             for x_, y_ in zip(x, y):
-                line += f"Point: {y_}, {x_}, "
+                line += f"Point: {x_}, {y_}, "
             line = line[:-2] + ']\n'
             file.write(line)
         file.close()

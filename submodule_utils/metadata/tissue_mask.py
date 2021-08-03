@@ -101,7 +101,10 @@ class TissueMask(object):
                     polygon = poly
                 else:
                     polygon = polygon.union(poly)
-            self.polygons['clear_area'] = list(polygon)
+            if polygon.type=='Polygon':
+                self.polygons['clear_area'] = polygon
+            else:
+                self.polygons['clear_area'] = list(polygon)
         else:
             raise NotImplementedError(f'Only .txt and .png files are supported.')
 

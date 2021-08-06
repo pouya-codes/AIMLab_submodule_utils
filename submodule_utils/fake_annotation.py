@@ -8,6 +8,18 @@ from submodule_utils.metadata.annotation import GroovyAnnotation
 
 
 class FakeAnnotation(object):
+    """
+    Important Note:
+    x, y are coordinates in PIL image format.
+    The difference between CV2 and PIL is:
+        Output of PIL is w, h
+        Output of CV2 is h, w, 3
+    Therefore, x and y in PIL is y and x in CV2.
+
+    but in image we first use column then row which is opposite of the way we handle matrix
+
+    therefore using x and y in PIL format while using cv2 library is fine and correct!
+    """
 
     def __init__(self, slide_name, os_slide, annotation_file_path, magnification, patch_size):
         """
@@ -65,9 +77,15 @@ class FakeAnnotation(object):
                 else: color=(192,192,192) # Silver
                 for polygon in polygons:
                     int_coords = lambda x: (np.array(x)/self.down_sample).round().astype(np.int32)
-                    exterior = [int_coords(polygon.exterior.coords)]
-                    cv2.fillPoly(overlay, exterior, color=color)
-            cv2.addWeighted(overlay, alpha, self.thumbnail, 1 - alpha, 0, self.thumbnail)
+                    # draw a line
+                    exterior = int_coords(polygon.exterior.coords)
+                    xs, ys = exterior[:,0], exterior[:,1]
+                    draw_points = (np.asarray([xs, ys]).T).astype(np.int32)
+                    cv2.polylines(self.thumbnail, [draw_points], False, color, 2)
+                    # draw a polygon
+                    # exterior = [int_coords(polygon.exterior.coords)]
+                    # cv2.fillPoly(overlay, exterior, color=color)
+            # cv2.addWeighted(overlay, alpha, self.thumbnail, 1 - alpha, 0, self.thumbnail)
 
         get_thumbnail()
         draw_annotation()

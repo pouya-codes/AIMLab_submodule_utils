@@ -44,6 +44,7 @@ DATASET_TO_PATIENT_REGEX = {
     # 'ovcare': re.compile(r"^(?!TCGA)[A-Z]+-?(\d.*\d).*\(?.*\)?.*$"), # For cases such as VOA-17017YW025A # Use this one only for TMA cores
     'tcga': re.compile(r"^(TCGA-\w+-\w+)-"),
     'german': re.compile(r"German-?(\d*).*\(?.*\)?.*$"),
+    'mesothelioma': re.compile(r"\w+_\w+_\w+_(\d+)_\w+"),
     'other': re.compile(r".*")
 }
 

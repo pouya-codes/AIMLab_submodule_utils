@@ -82,8 +82,8 @@ class TissueMask(object):
                             self.polygons[label].append(self.get_polygon(vertices))
         elif self.mask_file.endswith(".png"):
             mask = cv2.imread(self.mask_file, cv2.IMREAD_GRAYSCALE)
-            ratio_width = int(self.slide_size[0] / mask.shape[1])
-            ratio_heigh = int(self.slide_size[1] / mask.shape[0])
+            ratio_width = round(self.slide_size[0] / mask.shape[1])
+            ratio_heigh = round(self.slide_size[1] / mask.shape[0])
             contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             polygon = None
             for contour in contours:

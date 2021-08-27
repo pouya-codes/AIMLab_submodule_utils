@@ -68,14 +68,14 @@ class TissueMask(object):
         -------
         dict of matplotlib.path.Path
         """
-        self.polygons = {'clear_area': []}
+        self.polygons = {'clean_area': []}
         if self.mask_file.endswith(".txt"):
             with open(self.mask_file, 'r') as f:
                 for line in f:
                     if line != '':
                         label = self.get_label(line)
-                        if label != 'clear_area':
-                            raise ValueError(f'The only accepted label is clear_area '
+                        if label != 'clean_area':
+                            raise ValueError(f'The only accepted label is clean_area '
                                              f'but the label is {label}')
                         if len(label) != 0:
                             vertices = self.get_vertices(line)
@@ -102,9 +102,9 @@ class TissueMask(object):
                 else:
                     polygon = polygon.union(poly)
             if polygon.type=='Polygon':
-                self.polygons['clear_area'] = [polygon]
+                self.polygons['clean_area'] = [polygon]
             else:
-                self.polygons['clear_area'] = list(polygon)
+                self.polygons['clean_area'] = list(polygon)
         else:
             raise NotImplementedError(f'Only .txt and .png files are supported.')
 

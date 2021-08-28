@@ -78,14 +78,25 @@ class PlotThumbnail(object):
                 color=(100, 100, 100)
                 for polygon in polygons:
                     int_coords = lambda x: (np.array(x)/self.down_sample).round().astype(np.int32)
-                    # draw a line
-                    exterior = int_coords(polygon.exterior.coords)
-                    xs, ys = exterior[:,0], exterior[:,1]
-                    draw_points = (np.asarray([xs, ys]).T).astype(np.int32)
-                    cv2.polylines(self.thumbnail, [draw_points], False, color, 2)
-                    # draw a polygon
-                    # exterior = [int_coords(polygon.exterior.coords)]
-                    # cv2.fillPoly(overlay, exterior, color=color)
+                    if polygon.type=='Polygon':
+                        # draw a line
+                        exterior = int_coords(polygon.exterior.coords)
+                        xs, ys = exterior[:,0], exterior[:,1]
+                        draw_points = (np.asarray([xs, ys]).T).astype(np.int32)
+                        cv2.polylines(self.thumbnail, [draw_points], False, color, 2)
+                        # draw a polygon
+                        # exterior = [int_coords(polygon.exterior.coords)]
+                        # cv2.fillPoly(overlay, exterior, color=color)
+                    else:
+                        for polygon_ in polygon:
+                            # draw a line
+                            exterior = int_coords(polygon_.exterior.coords)
+                            xs, ys = exterior[:,0], exterior[:,1]
+                            draw_points = (np.asarray([xs, ys]).T).astype(np.int32)
+                            cv2.polylines(self.thumbnail, [draw_points], False, color, 2)
+                            # draw a polygon
+                            # exterior = [int_coords(polygon_.exterior.coords)]
+                            # cv2.fillPoly(overlay, exterior, color=color)
             # draw a polygon
             # cv2.addWeighted(overlay, alpha, self.thumbnail, 1 - alpha, 0, self.thumbnail)
 

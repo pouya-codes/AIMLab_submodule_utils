@@ -21,7 +21,7 @@ class FakeAnnotation(object):
     therefore using x and y in PIL format while using cv2 library is fine and correct!
     """
 
-    def __init__(self, slide_name, os_slide, annotation_file_path, magnification, patch_size):
+    def __init__(self, slide_name, os_slide, annotation_file_path, magnification, patch_size, skip_area):
         """
         Parameters
         ----------
@@ -41,6 +41,7 @@ class FakeAnnotation(object):
         self.store_thubmnail_path = os.path.join(self.store_path, 'Thumbnail')
         self.annotation_file = os.path.join(self.store_path, f'{self.slide_name}.txt')
         self.multi_poly = None
+        self.skip_area = skip_area
 
     def add_poly(self, x, y):
         coords = [(x, y), (x+self.patch_size, y),
@@ -99,6 +100,9 @@ class FakeAnnotation(object):
         else:
             self.multi_poly = list(self.multi_poly)
         for poly in self.multi_poly:
+            if self.skip_area is not None:
+                if int(poly.area) <= self.skip_area:
+                    continue
             line = ''
             line += label
             line += ' ['

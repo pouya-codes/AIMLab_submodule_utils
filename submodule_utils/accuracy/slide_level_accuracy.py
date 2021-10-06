@@ -170,7 +170,7 @@ class SlideLevelAccuracy:
                 output += f'{result:.4f}  '
         print(output)
 
-    def get_threshold_value(self ,subtypes_list, threshold):
+    def get_threshold_value(self, subtypes_list, threshold):
         if threshold is None or threshold is 0:
             return float(1 / len(subtypes_list))
         else:

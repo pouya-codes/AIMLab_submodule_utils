@@ -80,7 +80,7 @@ class TissueMask(object):
                         if len(label) != 0:
                             vertices = self.get_vertices(line)
                             self.polygons[label].append(self.get_polygon(vertices))
-        elif self.mask_file.endswith(".png"):
+        elif self.mask_file.endswith(".png") or self.mask_file.endswith(".svs"):
             mask = cv2.imread(self.mask_file, cv2.IMREAD_GRAYSCALE)
             ratio_width = round(self.slide_size[0] / mask.shape[1])
             ratio_heigh = round(self.slide_size[1] / mask.shape[0])
@@ -106,7 +106,7 @@ class TissueMask(object):
             else:
                 self.polygons['clean_area'] = list(polygon)
         else:
-            raise NotImplementedError(f'Only .txt and .png files are supported.')
+            raise NotImplementedError(f'Only .txt, and .png and .svs files are supported for the masks.')
 
     def get_area(self, factor=1.0):
         return {label: factor * self.count_polygons_area(polygons) \

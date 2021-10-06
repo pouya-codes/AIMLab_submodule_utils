@@ -125,11 +125,13 @@ class GroovyAnnotation(object):
     def points_to_label(self, points):
         """Get label of region that contains all the points, or return None if points are not in any region.
         """
+        labels = []
         if self.annotation_overlap==1:
             for label, paths in self.paths.items():
                 for path in paths:
                     if np.sum(path.contains_points(points)) == 4:
-                        return label
+                        labels.append(label)
+            return labels
         else:
             # Check the ratio of overlapping area
             patch = shapely.geometry.Polygon(points)
@@ -138,5 +140,6 @@ class GroovyAnnotation(object):
                     intersection = patch.intersection(polygon)
                     percent_area = intersection.area / patch.area
                     if percent_area >= self.annotation_overlap:
-                        return label
+                        labels.append(label)
+                return labels
         return None

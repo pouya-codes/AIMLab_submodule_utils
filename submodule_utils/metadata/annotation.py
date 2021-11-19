@@ -112,7 +112,6 @@ class GroovyAnnotation(object):
                         if self.logger:
                             self.logger.info(f"Slide {self.slide_name} has annotation(label) without name.")
 
-
     def get_area(self, factor=1.0):
         return {label: factor * self.count_polygons_area(polygons) \
                 for label, polygons in self.polygons.items()}
@@ -141,5 +140,5 @@ class GroovyAnnotation(object):
                     percent_area = intersection.area / patch.area
                     if percent_area >= self.annotation_overlap:
                         labels.append(label)
-                return labels
+            return labels
         return None

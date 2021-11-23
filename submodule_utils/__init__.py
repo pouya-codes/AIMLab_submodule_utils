@@ -974,8 +974,9 @@ def select_slides(slide_path, slide_idx, n_process):
 
 ##########
 # Amirali
-def filter_patches_based_slides(patch_location, pattern, slide_idx, n_process):
+def filter_patches_based_slides(patch_location, pattern, slide_idx, max_array_id, n_process):
     ''' Function to filter get all the patches from specifc slides'''
+
 
     if slide_idx is None:
         paths = get_paths(patch_location, pattern=pattern, extensions=['png'])
@@ -985,15 +986,22 @@ def filter_patches_based_slides(patch_location, pattern, slide_idx, n_process):
         raise ValueError("Selecting is based on SLIDE in pattern which is not available here")
 
     add = (pattern['slide']+1)*'/*'
-    slides = glob.glob(f"{patch_location}{add}")
 
-    slides.sort()
+    slides = sorted(glob.glob(f"{patch_location}{add}"))
+    len_slides = len(slides)
+
+    if ( max_array_id * n_process < len_slides):
+        raise ValueError(f"Total number of slides are {len_slides}"
+                         f" and by using {n_process} CPUs, you need to use "
+                         f"at least {(len_slides)//n_process+1} arrays! --> increase #SBATCH --array=1-{(len_slides)//n_process+1}")
 
     slides = select_slides(slides, slide_idx, n_process)
+
     paths = []
     add = (max(pattern.values())-pattern['slide'])*'/*'
     for slide in slides:
         paths.extend(glob.glob(f"{slide}{add}/*.png"))
+
     return paths
 
 # Source: https://stackoverflow.com/questions/1883980/find-the-nth-occurrence-of-substring-in-a-string
@@ -1227,3 +1235,4 @@ def find_slide_path(paths, slide_name):
         if path_to_filename(path) == slide_name:
             return path
     return None
+

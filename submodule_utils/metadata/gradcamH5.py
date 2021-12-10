@@ -24,7 +24,7 @@ class GradCAM_AIM():
         group = hdf.require_group(group_name)
         datasets = {}
         datasets["grad_cam"] = group.create_dataset("grad_cam",
-                                                    (tile_height, tile_width, patch_size, patch_size),
+                                                    (tile_height, tile_width, 32, 32),
                                                      compression="gzip", compression_opts=9, dtype='f')
         datasets["meta"] = group.create_dataset("meta", (1, ), dtype=h5py.special_dtype(vlen=str))
         return datasets
@@ -87,6 +87,8 @@ class GradCAM_AIM():
                 datasets["grad_cam"][tile_x, tile_y] = grad_cam
                 datasets["meta"][0] = self.dict_gradcams[slide_id]['meta']['image_coordinates']
 
+            print (f"created {slide_id} h5 activation map.")
+
 
     def __init__(self, slides_path, category_enum, patch_pattern, gradcam_location, deep_model, gradcam_h5):
         """
@@ -104,6 +106,7 @@ class GradCAM_AIM():
             self.dict_gradcams = {}
             os.makedirs(f"{self.gradcam_location}/grad_cam_h5_files", exist_ok=True)
             
+
 
 
 

@@ -92,6 +92,8 @@ class GradCAM_AIM():
             
             print (f"created {slide_id} h5 activation map.")
 
+            print (f"created {slide_id} h5 activation map.")
+
 
     def __init__(self, slides_path, category_enum, patch_pattern, gradcam_location, deep_model, gradcam_h5):
         """
@@ -109,6 +111,7 @@ class GradCAM_AIM():
             self.dict_gradcams = {}
             os.makedirs(f"{self.gradcam_location}/grad_cam_h5_files", exist_ok=True)
             
+
 
 
 

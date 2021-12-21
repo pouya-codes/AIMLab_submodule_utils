@@ -15,18 +15,21 @@ class GradCAM_AIM():
 
     def get_tile_dimensions(self, os_slide, patch_size):
         width, height = os_slide.dimensions
-        return int(width / patch_size), int(height / patch_size)
+        return int(width / patch_size), int(height / patch_size), width, height
 
 
     def create_hdf_datasets(self, hdf, os_slide, patch_size, magnification):
-        tile_width, tile_height = self.get_tile_dimensions(os_slide, patch_size * int(40 // magnification))
+        tile_width, tile_height, width, height = self.get_tile_dimensions(os_slide, patch_size * int(40 // magnification))
         group_name = "{}/{}".format(patch_size, magnification)
         group = hdf.require_group(group_name)
         datasets = {}
         datasets["grad_cam"] = group.create_dataset("grad_cam",
-                                                    (tile_height, tile_width, patch_size, patch_size),
+                                                    (tile_height, tile_width, 32, 32),
                                                      compression="gzip", compression_opts=9, dtype='f')
-        datasets["meta"] = group.create_dataset("meta", (1, ), dtype=h5py.special_dtype(vlen=str))
+        datasets["image_coordinates"] = group.create_dataset("image_coordinates", (1, ), dtype=h5py.special_dtype(vlen=str))
+        datasets["slide_diminsions"] = group.create_dataset("slide_diminsions", (2, ), dtype='f')
+        datasets["slide_diminsions"][0] = width
+        datasets["slide_diminsions"][1] = height
         return datasets
 
     def get_gradcam(self, patch_paths, cur_datas, gt_label):
@@ -85,7 +88,9 @@ class GradCAM_AIM():
             
             for tile_x, tile_y, grad_cam in self.dict_gradcams[slide_id]['data']:
                 datasets["grad_cam"][tile_x, tile_y] = grad_cam
-                datasets["meta"][0] = self.dict_gradcams[slide_id]['meta']['image_coordinates']
+            datasets["image_coordinates"][0] = self.dict_gradcams[slide_id]['meta']['image_coordinates']
+            
+            print (f"created {slide_id} h5 activation map.")
 
 
     def __init__(self, slides_path, category_enum, patch_pattern, gradcam_location, deep_model, gradcam_h5):

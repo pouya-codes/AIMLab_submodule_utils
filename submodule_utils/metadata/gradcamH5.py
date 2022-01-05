@@ -12,6 +12,19 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 
 class GradCAM_AIM():
 
+    """Creating the gradcam activation map as a hd5 file.
+
+    The generated hd5 file has the below structure:
+
+    ```
+    Dataset hierarchy: {patch_size}/{magnification}/grad_cam, image_coordinates, slide_diminsions
+    Dataset data: {patch_size}/{magnification}/grad_cam is a tile_x in tile_y array that contains a 32X32 activation map for each patch
+    Dataset data: {patch_size}/{magnification}/image_coordinates is a string that contains the tiles of the patches that we have generated acitvation map for. 
+    Dataset data: {patch_size}/{magnification}/slide_diminsions contains (width, height) of the slide
+    ```
+
+    """
+
 
     def get_tile_dimensions(self, os_slide, patch_size):
         width, height = os_slide.dimensions
@@ -40,36 +53,41 @@ class GradCAM_AIM():
             patch_id = create_patch_id(patch_path, self.patch_pattern)
             patch_size = get_patch_size_by_patch_id(patch_id, self.patch_pattern)
             slide_id = get_slide_by_patch_id(patch_id, self.patch_pattern)
-            file_name = patch_id.split("/")[-1] + ".png"
-
-            os.makedirs(f"{self.gradcam_location}/{slide_id}", exist_ok=True)
-
-            rgb_img = cv2.imread(patch_path, 1)[:, :, ::-1]
-            rgb_img = cv2.resize(rgb_img, (patch_size, patch_size))
-            rgb_img = np.float32(rgb_img) / 255
             
-            cam_image = show_cam_on_image(rgb_img, cam[0, :]) 
-            cv2.imwrite(f"{self.gradcam_location}/{slide_id}/{file_name}", cam_image)
 
-            if (self.generate_gradcam_h5):
+            # save overlayed gradcam and patch images
+            if not self.generate_gradcam_h5:
+
+                os.makedirs(f"{self.gradcam_location}/{slide_id}", exist_ok=True)
+
+                rgb_img = cv2.imread(patch_path, 1)[:, :, ::-1]
+                rgb_img = cv2.resize(rgb_img, (patch_size, patch_size))
+                rgb_img = np.float32(rgb_img) / 255
+                file_name = patch_id.split("/")[-1] + ".png"
+                
+                cam_image = show_cam_on_image(rgb_img, cam[0, :]) 
+                cv2.imwrite(f"{self.gradcam_location}/{slide_id}/{file_name}", cam_image)
+
+            # save the overlay gradcam activation map as a hd5 file
+            else :
                 cam = cv2.resize(cam, (32, 32)) # downsample activation map
                 magnification = get_magnification_by_patch_id(patch_id, self.patch_pattern)
                 tile_y, tile_x = get_patch_tile_by_patch_id(patch_id, patch_size * int(40 // magnification))
 
-
+                # for each patch store the activation map in the dataset
                 if slide_id in self.dict_gradcams: 
-                    self.dict_gradcams[slide_id]['data'].append([tile_x, tile_y, cam])
                     self.dict_gradcams[slide_id]['meta']['image_coordinates'] += f"{tile_x}_{tile_y}-"
                     
                 else:
                     self.dict_gradcams[slide_id] = {'meta': {'patch_size': patch_size,'magnification': magnification,
                                                     'image_coordinates': f"{tile_x}_{tile_y}-"}, 'data': []}
-                    self.dict_gradcams[slide_id]['data'].append([tile_x, tile_y, cam])
+                self.dict_gradcams[slide_id]['data'].append([tile_x, tile_y, cam])
         
 
     def save_gradcam_h5(self):
 
         out_path = f"{self.gradcam_location}/grad_cam_h5_files"
+
         print ("Creating h5 activation maps ...")
         for slide_id in tqdm(self.dict_gradcams.keys()):
 
@@ -90,8 +108,6 @@ class GradCAM_AIM():
                 datasets["grad_cam"][tile_x, tile_y] = grad_cam
             datasets["image_coordinates"][0] = self.dict_gradcams[slide_id]['meta']['image_coordinates']
             
-            print (f"created {slide_id} h5 activation map.")
-
             print (f"created {slide_id} h5 activation map.")
 
 

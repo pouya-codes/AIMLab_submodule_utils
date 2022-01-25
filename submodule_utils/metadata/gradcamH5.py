@@ -65,7 +65,7 @@ class GradCAM_AIM():
                 rgb_img = np.float32(rgb_img) / 255
                 file_name = patch_id.split("/")[-1] + ".png"
                 
-                cam_image = show_cam_on_image(rgb_img, cam[0, :]) 
+                cam_image = show_cam_on_image(rgb_img, cam) 
                 cv2.imwrite(f"{self.gradcam_location}/{slide_id}/{file_name}", cam_image)
 
             # save the overlay gradcam activation map as a hd5 file

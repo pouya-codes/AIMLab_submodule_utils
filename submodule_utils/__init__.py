@@ -977,9 +977,9 @@ def select_slides(slide_path, slide_idx, n_process):
 def filter_patches_based_slides(patch_location, pattern, slide_idx, max_array_id, n_process):
     ''' Function to filter get all the patches from specifc slides'''
 
-
+    extensions = ['png', 'jpg', 'jpeg'] #add filetypes
     if slide_idx is None:
-        paths = get_paths(patch_location, pattern=pattern, extensions=['png'])
+        paths = get_paths(patch_location, pattern=pattern, extensions=extensions)
         return paths
 
     if 'slide' not in pattern:
@@ -1000,7 +1000,8 @@ def filter_patches_based_slides(patch_location, pattern, slide_idx, max_array_id
     paths = []
     add = (max(pattern.values())-pattern['slide'])*'/*'
     for slide in slides:
-        paths.extend(glob.glob(f"{slide}{add}/*.png"))
+        for extension in extensions:
+            paths.extend(glob.glob(f"{slide}{add}/*.{extension}"))
 
     return paths
 
